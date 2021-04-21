@@ -49,10 +49,9 @@ tensorflow_model_server.manifest: tensorflow_model_server.manifest.template
 # and the token for enclave initialization.
 tensorflow_model_server.manifest.sgx: tensorflow_model_server.manifest
 	$(GRAPHENE_DIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
-		-exec tensorflow_model_server \
-		-libpal $(GRAPHENE_DIR)/Runtime/libpal-Linux-SGX.so \
-		-key $(SGX_SIGNER_KEY) \
-		-manifest $< -output $@
+		--libpal $(GRAPHENE_DIR)/Runtime/libpal-Linux-SGX.so \
+		--key $(SGX_SIGNER_KEY) \
+		--manifest $< --output $@
 
 tensorflow_model_server.sig: tensorflow_model_server.manifest.sgx
 

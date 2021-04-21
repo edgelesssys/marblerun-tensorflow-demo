@@ -7,7 +7,7 @@ ENV MODEL_BASE_PATH=${WORK_BASE_PATH}/models
 ENV MODEL_NAME=model
 ENV WERROR=1
 ENV SGX=1
-ENV GRAPHENE_VERSION=303528131c67f58aeee677397ade9593f222ae88
+#ENV GRAPHENE_VERSION=303528131c67f58aeee677397ade9593f222ae88
 
 # Enable it to disable debconf warning
 # RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
@@ -29,9 +29,11 @@ RUN apt-get update \
         libprotobuf-c-dev \
         libcurl4-openssl-dev \
         python3-protobuf \
+        python3-pip \
         protobuf-c-compiler \
         wget \
-    && apt-get install -y --no-install-recommends apt-utils
+    && apt-get install -y --no-install-recommends apt-utils \
+    && python3 -m pip install toml>=0.10
 
 RUN echo "deb [trusted=yes arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main" | tee /etc/apt/sources.list.d/intel-sgx.list \
     && wget -qO - https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add -
@@ -50,8 +52,7 @@ RUN apt-get install -y libsgx-dcap-ql-dev libsgx-dcap-default-qpl libsgx-dcap-qu
 
 # Clone Graphene and init submodules
 RUN git clone https://github.com/oscarlab/graphene.git ${GRAPHENEDIR} \
-    && cd ${GRAPHENEDIR} \
-    && git checkout ${GRAPHENE_VERSION}
+    && cd ${GRAPHENEDIR}
 
 # Create SGX driver for header files
 RUN cd ${GRAPHENEDIR}/Pal/src/host/Linux-SGX \
@@ -61,16 +62,15 @@ RUN cd ${GRAPHENEDIR}/Pal/src/host/Linux-SGX \
 
 # Build Graphene-SGX
 RUN cd ${GRAPHENEDIR} \
-    && make -s -j `nproc` \
-    && true
+    && make -s -j `nproc`
 
 # Translate runtime symlinks to files
-RUN for f in $(find ${GRAPHENEDIR}/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
+#RUN for f in $(find ${GRAPHENEDIR}/Runtime -type l); do cp --remove-destination $(realpath $f) $f; done
 
 # Build Secret Provision
-RUN cd ${GRAPHENEDIR}/Examples/ra-tls-secret-prov \
-    && make -j `nproc` -C ${GRAPHENEDIR}/Pal/src/host/Linux-SGX/tools/ra-tls dcap \
-    && make -j `nproc` dcap pf_crypt
+#RUN cd ${GRAPHENEDIR}/Examples/ra-tls-secret-prov \
+#    && make -j `nproc` -C ${GRAPHENEDIR}/Pal/src/host/Linux-SGX/tools/ra-tls dcap \
+#    && make -j `nproc` dcap
 
 # Install the latest tensorflow-model-server
 RUN apt-get install -y tensorflow-model-server
@@ -79,11 +79,11 @@ RUN apt-get install -y tensorflow-model-server
 RUN apt-get clean all
 
 WORKDIR ${WORK_BASE_PATH}
-RUN cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsecret_prov_attest.so . \
-    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsecret_prov_verify_dcap.so . \
-    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsgx_util.so . \
-    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libmbed*.so* . \
-    && cp -R ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/certs .
+#RUN cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsecret_prov_attest.so . \
+#    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsecret_prov_verify_dcap.so . \
+#    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libsgx_util.so . \
+#    && cp ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/libmbed*.so* . \
+#    && cp -R ${GRAPHENEDIR}/Examples/ra-tls-secret-prov/certs .
 
 COPY Makefile .
 COPY tensorflow_model_server.manifest.template .

@@ -24,10 +24,10 @@ host_ports=""
 cur_dir=`pwd -P`
 ssl_config_file=""
 enable_batching=false
-rest_api_num_threads=64
+rest_api_num_threads=0
 session_parallelism=0
-parallel_num_threads=32
-file_system_poll_wait_seconds=20
+parallel_num_threads=0
+file_system_poll_wait_seconds=10
 attestation_hosts="localhost:127.0.0.1"
 work_base_path=/graphene/Examples/tensorflow-serving-cluster/tensorflow-serving
 isgx_driver_path=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver
@@ -86,7 +86,7 @@ docker run \
     --device /dev/sgx \
     --add-host=${attestation_hosts} \
     -p ${host_ports}:8500-8501 \
-    -v ${cur_dir}/models:${work_base_path}/models \
+    -v ${cur_dir}/models:/models \
     -v ${cur_dir}/ssl_configure/${ssl_config_file}:${work_base_path}/${ssl_config_file} \
     -v /var/run/aesmd/aesm:/var/run/aesmd/aesm \
     -e http_proxy=${http_proxy} \
