@@ -11,6 +11,7 @@ def show(img, title):
     plt.figure()
     plt.axis('off')
     plt.title('\n\n{}'.format(title), fontdict={'size': 16})
+    print(title)
     plt.imsave('sample_image.png', img)#test_images[idx].reshape(244,244))
 
 print('TensorFlow version: {}'.format(tf.__version__))
@@ -35,6 +36,8 @@ print('Data: {} ... {}'.format(data[:50], data[len(data)-52:]))
 import requests
 headers = {"content-type": "application/json"}
 json_response = requests.post('http://grpc.tf-serving.service.com:8501/v1/models/resnet50-v15-fp32:predict', data=data, headers=headers)
-predictions = json.loads(json_response.text)['predictions']
+print(json_response)
 
-show(image_np, 'The model thought {}'.format(predictions[0]))
+#predictions = json.loads(json_response.text)['predictions']
+
+#show(image_np, 'The model thought {}'.format(predictions[0]))

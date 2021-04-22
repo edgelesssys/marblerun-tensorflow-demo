@@ -18,6 +18,7 @@ tensorflow 2.4.0 requires grpcio at version 1.32, but requirments.txt specifies 
 To fix this, first install at 1.32 using `requirments.txt` then manually install 1.34 using pip `python3 -m pip install grpcio~=1.34.0`  
 
 The demo sets tensorflow to start with a LOT of memory and cpu resources (32G sgx memory, 32 memory & cpu in kubernetes), this might be overkill in which case we can reduce it, or needed in which case it might be a problem.  
+We need ~256 threads for tensorflow model server to not crash. Using a 8GiB azure VM providing the graphene image with more than 2G of memory will crash the container (oom), execution is therefore rather slow.
 
 When running on kubernetes the graphene ra-tls-secret-prov example is used to distribute secrets / certificates, ideally this would be taken care of my marblerun  
 
@@ -25,7 +26,31 @@ The demo is run on a self built kubernetes cluster -> a lot of files are mounted
 Ideally we would instead run this on aks using the aesm device plugin instead.
 
 
-Execute tensorflow_model_server: 
-```bash
-./pal_loader tensorflow_model_server --model_name=resnet50-v15-fp32  --model_base_path=./models --port=8500 --rest_api_port=8501 --enable_model_warmup=true --flush-filesystem_caches=false --enable_batching=false --ssl_config_file=./ssl.cfg --rest_api_num_threads=8 --tensorflow_session_parallelism=0 tensorflow_intra_op_parallelism=8 --tensorflow_inter_op_parallelism=8 --file_system_poll_wait_seconds=10
-```
+## Building the Docker Image
+
+* Build a working SGX graphene directory (https://graphene.readthedocs.io/en/latest/cloud-deployment.html)
+
+* Copy everything from `./graphene-files` to `<graphene-dir>/Examples/tensorflow-serving-cluster/tensorflow-serving`
+
+* Run `build_graphene_tf_serving_image.sh`
+
+## Running as a Container
+
+* Start the Marblerun coordinator
+
+* Uploade the manifest:
+    ```bash
+    marblerun manifest set tf-server-manifest.json [--insecure]
+    ```
+
+* Download and convert the model
+    ```bash
+    ./download_model
+    models_abs_dir=`pwd -P`
+    python3 ./model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    ```
+
+* Start the container
+    ```bash
+    ./docker_run.sh
+    ```
