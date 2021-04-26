@@ -7,11 +7,12 @@ work_base_path=/graphene/Examples/tensorflow-marblerun
 ssl_config_file="ssl.cfg"
 mount_dir=`pwd -P`
 host_ports="8500-8501"
-image_id=graphene_tf_serving:latest
+image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
 
 docker run \
     -it \
     --privileged \
+    --entrypoint bash \
     --device /dev/sgx \
     --network host \
     --add-host=${attestation_hosts} \

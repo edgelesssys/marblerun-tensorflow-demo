@@ -42,6 +42,8 @@ spec:
         volumeMounts:
         - name: aesmd-socket
           mountPath: /var/run/aesmd
+        - name: model-dir
+          mountPath: /graphene/Examples/tensorflow-marblerun/models
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8  }}
@@ -50,6 +52,9 @@ spec:
       - name: aesmd-socket
         hostPath:
           path: /var/run/aesmd
+      - name: model-dir
+        configMap:
+          name: resnet50
 ---
 apiVersion: v1
 kind: Service
