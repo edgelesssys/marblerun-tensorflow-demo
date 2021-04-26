@@ -28,7 +28,8 @@
                     "--file_system_poll_wait_seconds=5"
                 ],
                 "Files": {
-                    "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false"
+                    "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
+                    "model_key.pem": ""
                 },
                 "Env": {
                     "ISGX_DRIVER_PATH": "/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver",
