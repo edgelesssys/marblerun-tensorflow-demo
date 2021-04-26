@@ -1,0 +1,66 @@
+kind: ServiceAccount
+apiVersion: v1
+metadata:
+  name: tf-server
+  namespace: tensorflow
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tf-server
+  namespace: tensorflow
+  labels:
+    app: tf-server
+spec:
+  serviceName: "tf-server"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tf-server
+      version: v1
+  template:
+    metadata:
+      labels:
+        app: tf-server
+        version: v1
+        marblerun/marbletype: tf-server
+    spec:
+      serviceAccountName: tf-server
+      containers:
+      - image: ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        name: tf-server
+        env:
+        - name: SGX_AESM_ADDR
+          value: "1"
+        - name: EDG_MARBLE_UUID_FILE
+          value: "uuid"
+        - name: EDG_MARBLE_DNS_NAMES
+          value: "grpc.tf-serving.service.com"
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: aesmd-socket
+          mountPath: /var/run/aesmd
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8  }}
+      {{- end }}
+      volumes:
+      - name: aesmd-socket
+        hostPath:
+          path: /var/run/aesmd
+---
+apiVersion: v1
+kind: Service
+metdata:
+  name: tf-server
+  namespace: tensorflow
+spec:
+  type: NodePort
+  selector:
+    app: tf-server
+  ports:
+  - name: grpc
+    port: 8500
+    targetPort: 8500

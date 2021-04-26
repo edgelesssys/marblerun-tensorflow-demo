@@ -16,13 +16,13 @@ GRAPHENE_DIR ?= /graphene
 SGX_SIGNER_KEY ?= $(GRAPHENE_DIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 
 TF-SERVING_DIR := /usr/bin
-MODEL_DIR := $(GRAPHENE_DIR)/Examples/tensorflow-serving-cluster/tensorflow-serving/models
+MODEL_DIR := $(GRAPHENE_DIR)/Examples/tensorflow-marblerun/models
 
 ifeq ($(DEBUG),1)
-GRAPHENE_DEBUG = inline
+GRAPHENE_DEBUG = debug
 TF-SERVING_BUILD = Debug
 else
-GRAPHENE_DEBUG = none
+GRAPHENE_DEBUG = error
 TF-SERVING_BUILD = Release
 endif
 

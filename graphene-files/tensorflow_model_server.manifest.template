@@ -1,12 +1,10 @@
 ################################## GRAPHENE ###################################
 
 # Graphene environment, including the path to the library OS and the debug
-# option (inline/none).
-#loader.debug_type = "$(GRAPHENE_DEBUG)"
-loader.log_level = "debug"
+# the default is "error" for non-debug builds, and "debug" for debug builds.
+loader.log_level = "$(GRAPHENE_DEBUG)"
 loader.preload = "file:$(GRAPHENE_DIR)/Runtime/libsysdb.so"
 
-#libos.entrypoint = "file:tensorflow_model_server"
 libos.entrypoint = "file:premain-graphene"
 
 ################################# ARGUMENTS ###################################
@@ -20,14 +18,13 @@ loader.insecure__use_host_env = 1
 ################################# ENV VARS ####################################
 
 # Environment variables
-#loader.env.LD_PRELOAD = "./premain-graphene.so"
-loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr/$(ARCH_LIBDIR)"
+loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr$(ARCH_LIBDIR)"
 
 
 ################################## SIGNALS ####################################
 
 # Allow for injecting SIGTERM signal from the host.
-sys.enable_sigterm_injection = 0
+sys.enable_sigterm_injection = 1
 
 
 ################################# MOUNT FS  ###################################
@@ -47,8 +44,8 @@ fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
 
 # More host-level libraries (e.g., /usr/lib/x86_64-linux-gnu) required by TF-Serving.
 fs.mount.lib3.type = "chroot"
-fs.mount.lib3.path = "/usr/$(ARCH_LIBDIR)"
-fs.mount.lib3.uri = "file:/usr/$(ARCH_LIBDIR)"
+fs.mount.lib3.path = "/usr$(ARCH_LIBDIR)"
+fs.mount.lib3.uri = "file:/usr$(ARCH_LIBDIR)"
 
 # Host-level directory to NSS files required by Glibc + NSS libs.
 fs.mount.etc.type = "chroot"
@@ -88,13 +85,14 @@ sgx.nonpie_binary = 1
 
 sgx.trusted_files.runtime = "file:/graphene/Runtime/"
 sgx.trusted_files.arch_libdir = "file:$(ARCH_LIBDIR)/"
-sgx.trusted_files.usr_arch_libdir = "file:/usr/$(ARCH_LIBDIR)/"
+sgx.trusted_files.usr_arch_libdir = "file:/usr$(ARCH_LIBDIR)/"
 
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
 
 #sgx.trusted_files.premain = "file:premain-graphene.so"
 sgx.trusted_files.premain = "file:premain-graphene"
+
 
 ############################# SGX: ALLOWED FILES ###############################
 
@@ -118,13 +116,14 @@ sgx.allowed_files.gaiconf = "file:/etc/gai.conf"
 # TF-Serving model
 sgx.allowed_files.sslcfg = "file:ssl.cfg"
 sgx.allowed_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
+#sgx.protected_files.model = "file:model/resnet50-v15-fp32/1/saved_model.pb"
 sgx.allowed_files.uid = "file:uuid"
 sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"
-sgx.allowed_files.attestation_service = "file:/dev/attestation/quote"
 
 
 ############################# SGX: Attestation ###############################
+
 sgx.remote_attestation = 1
-sgx.isvprodid = 1
-sgx.isnsvn    = 1
+sgx.isvprodid = 3
+sgx.isvsvn    = 1
 
