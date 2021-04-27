@@ -8,7 +8,7 @@ FROM ghcr.io/edgelesssys/edgelessrt-dev AS build-premain
 COPY --from=pull /premain /premain
 WORKDIR /premain/build
 RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-RUN make premain-graphene
+RUN make premain-graphene-so
 #COPY --from=pull /decrypt /decrypt
 #RUN ertgo build -buildmode=c-shared -o decrypt-model.so ./decrypt-model-so
 
@@ -60,7 +60,7 @@ COPY . ${GRAPHENEDIR}
 
 WORKDIR ${WORK_BASE_PATH}
 
-COPY --from=build-premain /premain/build/premain-graphene ${WORK_BASE_PATH}
+COPY --from=build-premain /premain/build/premain-graphene.so ${WORK_BASE_PATH}
 #COPY --from=build-premain /decrypt/decrypt-model.so ${WORK_BASE_PATH}
 RUN mv ./tf_serving_entrypoint.sh /usr/bin
 
@@ -70,7 +70,7 @@ RUN unset http_proxy && unset https_proxy
 EXPOSE 8500
 # REST
 EXPOSE 8501
-RUN make SGX=1
+RUN make SGX=1 DEBUG=1
 
 RUN chmod +x /usr/bin/tf_serving_entrypoint.sh
 

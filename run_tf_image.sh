@@ -7,19 +7,17 @@ work_base_path=/graphene/Examples/tensorflow-marblerun
 ssl_config_file="ssl.cfg"
 mount_dir=`pwd -P`
 host_ports="8500-8501"
-image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:light
 
 docker run \
     -it \
     --privileged \
-    --entrypoint bash \
     --device /dev/sgx \
     --network host \
     --add-host=${attestation_hosts} \
     -p ${host_ports}:8500-8501 \
     -v ${mount_dir}/models:${work_base_path}/models \
     -v /var/run/aesmd:/var/run/aesmd \
-    -e DEBUG=1 \
     -e SGX=1 \
     -e ISGX_DRIVER_PATH=/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver \
     -e EDG_MARBLE_TYPE=tf-server \

@@ -5,7 +5,7 @@
 loader.log_level = "$(GRAPHENE_DEBUG)"
 loader.preload = "file:$(GRAPHENE_DIR)/Runtime/libsysdb.so"
 
-libos.entrypoint = "file:premain-graphene"
+libos.entrypoint = "file:tensorflow_model_server"
 
 
 ################################# ARGUMENTS ###################################
@@ -19,6 +19,7 @@ loader.insecure__use_host_env = 1
 ################################# ENV VARS ####################################
 
 # Environment variables
+loader.env.LD_PRELOAD = "./decrypt-model.so ./premain-graphene.so"
 loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr$(ARCH_LIBDIR)"
 
 
@@ -76,7 +77,6 @@ sgx.enclave_size = "2G"
 # We (somewhat arbitrarily) specify 1024 threads since TF-Serving is multithreaded.
 sgx.thread_num = 512
 
-sgx.nonpie_binary = 1
 #sgx.preheat_enclave = 1
 
 
@@ -91,7 +91,8 @@ sgx.trusted_files.usr_arch_libdir = "file:/usr$(ARCH_LIBDIR)/"
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
 
-sgx.trusted_files.premain = "file:premain-graphene"
+sgx.trusted_files.premain = "file:premain-graphene.so"
+sgx.trusted_files.decrypt_lib = "file:decrypt-model.so"
 
 
 ############################# SGX: ALLOWED FILES ###############################
@@ -112,7 +113,7 @@ sgx.allowed_files.aesm_socket = "file:/var/run/aesmd/aesm.socket"
 
 # TF-Serving model
 sgx.allowed_files.sslcfg = "file:ssl.cfg"
-sgx.allowed_files.model = "file:/models/resnet50-v15-fp32/1/saved_model.pb"
+sgx.allowed_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
 sgx.allowed_files.encrypted_model = "file:/encrypted/saved_model.pb.encrypted"
 sgx.allowed_files.uid = "file:uuid"
 sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"

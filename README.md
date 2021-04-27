@@ -8,7 +8,10 @@ pip3 install -r ./client/requirements.txt
 ```
 (make sure pip is up to date)  
 
-
+* Build preload library to decrypt the model
+    ```bash
+    ertgo build -buildmode=c-shared -o decrypt-model.so ./decrypt-model-so
+    ```
 
 ## Building the Docker Image
 
@@ -29,7 +32,7 @@ pip3 install -r ./client/requirements.txt
 
 * Start Marblerun
     ```bash
-    EDG_COODINATOR_DNS_NAMES=grpc.tf-serving.service.com erthost ${marblerun_dir}/build/coordinator.signed
+    EDG_COORDINATOR_DNS_NAMES=grpc.tf-serving.service.com erthost ${marblerun_dir}/build/coordinator-enclave.signed
     export MARBLERUN=grpc.tf-serving.service.com:4433
     ```
 
@@ -96,10 +99,10 @@ pip3 install -r ./client/requirements.txt
     ```
 
 * Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
-        ```bash
-        aes_key=`cat model_key`
-        cat tf-server-manifest.json | sed "s/YOUR_KEY_HERE/${aes_key}/g" > manifest.json
-        ```
+    ```bash
+    aes_key=`cat model_key`
+    cat tf-server-manifest.json | sed "s/YOUR_KEY_HERE/${aes_key}/g" > manifest.json
+    ```
 
 * Upload the manifest:
     ```bash
