@@ -1,7 +1,9 @@
-ssl_configure
 models
-sample_image.png
 marblerun.crt
 __pycache__/
 era-config.json
 tensorflow.crt
+model_key*
+decrypt-model.h
+decrypt-model.so
+manifest.json

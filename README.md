@@ -85,30 +85,25 @@ pip3 install -r ./client/requirements.txt
     python3 ./model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
     ```
 
-* Generate a key and use it to encrypt the model. The go code will encrypt the model and encode the data using base64
+* Use `encrypt_model.go` to generate a AES key and encrypt the model
     ```bash
-    openssl genrsa -out model_key.pem 2048
-    go run encrypt_model.go -k model_key.pem -m models/resnet50-v15-fp32/1/saved_model.pb
+    go run client/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 * Create a configmap containing the encrypted model
     ```bash
-    kubectl create confimap resnet50 --from-file=encrypted/saved_model.pb
+    kubectl create configmap encrypted-model --from-file=encrypted/saved_model.pb.encrypted
     ```
 
-* Set the key in `tf-server-manifest.json` so the application can use it to decrypt the model at runtime
-    * Use the following command to preserve newlines correctly:
+* Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
         ```bash
-        awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' model_key.pem
-        ```
-    * Set the output of the previous command in `tf-server-manifest.json` as the value for `model_key.pem` in `Marbles/tf-server/Parameters/Files`
-        ```bash
-        "model_key.pem": "-----BEGIN RSA PRIVATE KEY-----\nMIICXQ.....lnrna\n-----END RSA PRIVATE KEY-----\n"
+        aes_key=`cat model_key`
+        cat tf-server-manifest.json | sed "s/YOUR_KEY_HERE/${aes_key}/g" > manifest.json
         ```
 
 * Upload the manifest:
     ```bash
-    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    marblerun manifest set manifest.json $MARBLERUN
     ```
 
 * Start the Tensorflow Model Server

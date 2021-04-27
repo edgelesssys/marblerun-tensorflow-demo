@@ -29,7 +29,7 @@
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "model_key.pem": ""
+                    "model_key": "YOUR_KEY_HERE"
                 },
                 "Env": {
                     "ISGX_DRIVER_PATH": "/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver",

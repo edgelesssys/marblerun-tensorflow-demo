@@ -7,6 +7,7 @@ loader.preload = "file:$(GRAPHENE_DIR)/Runtime/libsysdb.so"
 
 libos.entrypoint = "file:premain-graphene"
 
+
 ################################# ARGUMENTS ###################################
 
 # Read application arguments directly from the command line. Don't use this on production!
@@ -90,7 +91,6 @@ sgx.trusted_files.usr_arch_libdir = "file:/usr$(ARCH_LIBDIR)/"
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
 
-#sgx.trusted_files.premain = "file:premain-graphene.so"
 sgx.trusted_files.premain = "file:premain-graphene"
 
 
@@ -109,14 +109,11 @@ sgx.allowed_files.gaivconf = "file:/etc/gai.conf"
 sgx.allowed_files.time = "file:/etc/localtime"
 sgx.allowed_files.aesm_socket = "file:/var/run/aesmd/aesm.socket"
 
-# getaddrinfo(3) configuration file. Glibc reads this file to correctly find
-# network addresses. For more info, see 'man gai.conf'.
-sgx.allowed_files.gaiconf = "file:/etc/gai.conf"
 
 # TF-Serving model
 sgx.allowed_files.sslcfg = "file:ssl.cfg"
-sgx.allowed_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
-#sgx.protected_files.model = "file:model/resnet50-v15-fp32/1/saved_model.pb"
+sgx.allowed_files.model = "file:/models/resnet50-v15-fp32/1/saved_model.pb"
+sgx.allowed_files.encrypted_model = "file:/encrypted/saved_model.pb.encrypted"
 sgx.allowed_files.uid = "file:uuid"
 sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"
 

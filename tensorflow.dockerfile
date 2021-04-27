@@ -2,15 +2,18 @@
 
 FROM alpine/git:latest AS pull
 RUN git clone https://github.com/edgelesssys/marblerun.git /premain
+#RUN git clone https://github.com/edgelesssys/graphene-tensorflow-demo.git /decrypt
 
 FROM ghcr.io/edgelesssys/edgelessrt-dev AS build-premain
 COPY --from=pull /premain /premain
 WORKDIR /premain/build
 RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
 RUN make premain-graphene
+#COPY --from=pull /decrypt /decrypt
+#RUN ertgo build -buildmode=c-shared -o decrypt-model.so ./decrypt-model-so
 
 # Use with fully built graphene as build context
-# place Makefile, tf_serving_entrypoint.sh and tensorflow_model_server.manifest.template inside ${GRAPHENEDIR}/Examples/tensorflow-marblerun
+# place Makefile, tf_serving_entrypoint.sh and tensorflow_model_server.manifest.template inside ${LOCAL_GRAPHENEDIR}/Examples/tensorflow-marblerun
 FROM ghcr.io/edgelesssys/edgelessrt-deploy:latest
 ENV GRAPHENEDIR=/graphene
 ENV ISGX_DRIVER_PATH=${GRAPHENEDIR}/Pal/src/host/Linux-SGX/linux-sgx-driver
@@ -19,9 +22,6 @@ ENV MODEL_BASE_PATH=${WORK_BASE_PATH}/models
 ENV MODEL_NAME=model
 ENV WERROR=1
 ENV SGX=1
-
-# Enable it to disable debconf warning
-# RUN echo 'debconf debconf/frontend select Noninteractive' | debconf-set-selections
 
 # Add steps here to set up dependencies
 RUN apt-get update \
@@ -61,6 +61,7 @@ COPY . ${GRAPHENEDIR}
 WORKDIR ${WORK_BASE_PATH}
 
 COPY --from=build-premain /premain/build/premain-graphene ${WORK_BASE_PATH}
+#COPY --from=build-premain /decrypt/decrypt-model.so ${WORK_BASE_PATH}
 RUN mv ./tf_serving_entrypoint.sh /usr/bin
 
 # Expose tensorflow-model-server ports
