@@ -7,3 +7,4 @@ model_key*
 decrypt-model.h
 decrypt-model.so
 manifest.json
+encrypted

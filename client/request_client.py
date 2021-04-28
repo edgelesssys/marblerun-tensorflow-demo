@@ -13,6 +13,6 @@ print('Data: {} ... {}'.format(data[:50], data[len(data)-52:]))
 
 # Send data to tensorflow model server and print reponse
 headers = {"content-type": "application/json"}
-json_response = post('http://grpc.tf-serving.service.com:8501/v1/models/resnet50-v15-fp32:predict', data=data, headers=headers)
+json_response = post('http://grpc.tf-serving.service.com:8501/v1/models/resnet50:predict', data=data, headers=headers)
 print(json_response)
 

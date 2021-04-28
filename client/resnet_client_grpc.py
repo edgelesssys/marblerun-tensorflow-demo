@@ -47,7 +47,7 @@ class benchmark_engine(object):
 
             # create request
             request = predict_pb2.PredictRequest()
-            request.model_spec.name = 'default'
+            request.model_spec.name = 'resnet50'
             request.model_spec.signature_name = 'serving_default'
             request.inputs['input'].CopyFrom(tf.make_tensor_proto(image_np, shape=[self.batch_size, 224, 224, 3]))
             self.request_signatures.append(request)

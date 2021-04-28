@@ -56,7 +56,13 @@ RUN apt-get install -y tensorflow-model-server
 # Clean apt cache
 RUN apt-get clean all
 
-COPY . ${GRAPHENEDIR}
+# Only add the needed folders to save space
+COPY ./Examples/tensorflow-marblerun ${GRAPHENEDIR}/Examples/tensorflow-marblerun
+COPY ./LibOS ${GRAPHENEDIR}/LibOS
+COPY ./Pal ${GRAPHENEDIR}/Pal
+COPY ./python ${GRAPHENEDIR}/python
+COPY ./Runtime ${GRAPHENEDIR}/Runtime
+COPY ./Scripts ${GRAPHENEDIR}/Scripts
 
 WORKDIR ${WORK_BASE_PATH}
 
@@ -70,7 +76,7 @@ RUN unset http_proxy && unset https_proxy
 EXPOSE 8500
 # REST
 EXPOSE 8501
-RUN make SGX=1 DEBUG=1
+RUN make SGX=1
 
 RUN chmod +x /usr/bin/tf_serving_entrypoint.sh
 

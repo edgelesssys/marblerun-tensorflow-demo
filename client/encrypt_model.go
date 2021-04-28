@@ -10,6 +10,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 )
 
 func main() {
@@ -64,13 +65,17 @@ func encryptFile(key []byte, targetFile string) error {
 		return err
 	}
 
-	encryptedFile, err := os.OpenFile(fmt.Sprintf("encrypted/%s.encrypted", targetFile), os.O_RDWR|os.O_CREATE, 0644)
+	if _, err := os.Stat("encrypted/"); os.IsNotExist(err) {
+		os.Mkdir("encrypted/", 0744)
+	}
+
+	encryptedFile, err := os.OpenFile(fmt.Sprintf("encrypted/%s.encrypted", path.Base(targetFile)), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return fmt.Errorf("error opening encryption file: %v", err)
 	}
 	defer encryptedFile.Close()
 
-	buffer := make([]byte, 1024)
+	buffer := make([]byte, 512)
 	sealer := cipher.NewCTR(block, iv)
 	for {
 		n, err := plaintextFile.Read(buffer)
