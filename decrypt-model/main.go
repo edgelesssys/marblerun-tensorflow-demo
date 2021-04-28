@@ -15,12 +15,13 @@ import (
 	"path"
 	"path/filepath"
 	"syscall"
+	"time"
 )
 
 var (
-	modelFile = "saved_model.pb"
-	modelName = "resnet50-v15-fp32"
-	modelBaseDir = "/models"
+	modelFile         = "saved_model.pb"
+	modelName         = "resnet50-v15-fp32"
+	modelBaseDir      = "/models"
 	encryptedFilePath = "/encrypted/saved_model.pb.encrypted"
 )
 
@@ -37,12 +38,15 @@ func main() {
 	}
 
 	if key != nil {
-		if err := decryptModel(key); err != nil {
-			if !os.IsNotExist(err) {
-				log.Panic(err)
+		for {
+			if err := decryptModel(key); err != nil {
+				if !os.IsNotExist(err) {
+					log.Panic(err)
+				}
+				// assume the model is present as a decrypted file, since we dont have an encrypted model
+				log.Printf("Missing File %v, Trying again in 10 Seconds\n", err)
+				time.Sleep(10 * time.Second)
 			}
-			// assume the model is present as a decrypted file, since we dont have an encrypted model
-			log.Printf("error during decryption: %v, skipping decryption\n", err)
 		}
 	}
 

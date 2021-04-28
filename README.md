@@ -27,7 +27,7 @@ pip3 install -r ./client/requirements.txt
     ```bash
     ./tools/download_model.sh
     models_abs_dir=`pwd -P`
-    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/models/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/models/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
     ```
 
 1. Use `encrypt_model.go` to generate an AES key and encrypt the model. The key will be saved to `model_key` in base64 encoding
@@ -82,17 +82,12 @@ pip3 install -r ./client/requirements.txt
     ```bash
     ./tools/download_model.sh
     models_abs_dir=`pwd -P`
-    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/models/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/models/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
     ```
 
 1. Use `encrypt_model.go` to generate a AES key and encrypt the model
     ```bash
     go run ./tools/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
-    ```
-
-1. Create a configmap containing the encrypted model
-    ```bash
-    kubectl create configmap encrypted-model --from-file=encrypted/saved_model.pb.encrypted
     ```
 
 1. Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
@@ -105,7 +100,7 @@ pip3 install -r ./client/requirements.txt
     marblerun manifest set manifest.json $MARBLERUN
     ```
 
-1. Create and add the tensroflow namespace to Marblerun
+1. Create and add the tensorflow namespace to Marblerun
     ```bash
     kubectl create namespace tensorflow
     marblerun namespace add tensorflow
@@ -114,6 +109,11 @@ pip3 install -r ./client/requirements.txt
 1. Start the Tensorflow Model Server
     ```bash
     helm install -f ./kubernetes/values.yaml tensorflow-demo ./kubernetes -n tensorflow
+    ```
+
+1. Upload the model to Kubernetes
+    ```bash
+    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server:/encrypted/saved_model.pb.encrypted
     ```
 
 1. Get Marblerun's certificate

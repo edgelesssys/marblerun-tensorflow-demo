@@ -53,8 +53,20 @@ spec:
         hostPath:
           path: /var/run/aesmd
       - name: model-dir
-        configMap:
-          name: encrypted-model
+        persistentVolumeClaim:
+          claimName: encrypted-model
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: encrypted-model
+  namespace: tensorflow
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 110Mi
 ---
 apiVersion: v1
 kind: Service
