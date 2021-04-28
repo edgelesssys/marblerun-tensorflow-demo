@@ -25,14 +25,14 @@ pip3 install -r ./client/requirements.txt
 
 1. Download and convert the model
     ```bash
-    ./download_model
+    ./tools/download_model.sh
     models_abs_dir=`pwd -P`
-    python3 ./model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
     ```
 
 1. Use `encrypt_model.go` to generate an AES key and encrypt the model. The key will be saved to `model_key` in base64 encoding
     ```bash
-    go run client/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
+    go run ./tools/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 1. Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
@@ -47,7 +47,7 @@ pip3 install -r ./client/requirements.txt
 
 1. Start the Tensorflow Model Server
     ```bash
-    ./run_tf_image.sh
+    ./tools/run_tf_image.sh
     ```
 
 1. Get Marbleruns intermediate certificate to connect to the model server
@@ -80,14 +80,14 @@ pip3 install -r ./client/requirements.txt
 
 1. Download and convert the model
     ```bash
-    ./download_model
+    ./tools/download_model.sh
     models_abs_dir=`pwd -P`
-    python3 ./model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
     ```
 
 1. Use `encrypt_model.go` to generate a AES key and encrypt the model
     ```bash
-    go run client/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
+    go run ./tools/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 1. Create a configmap containing the encrypted model
