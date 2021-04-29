@@ -8,6 +8,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
+	"flag"
 	"io"
 	"io/ioutil"
 	"log"
@@ -20,32 +21,32 @@ import (
 
 var (
 	modelFile         = "saved_model.pb"
-	modelName         = "resnet50-v15-fp32"
-	modelBaseDir      = "/models"
 	encryptedFilePath = "/encrypted/saved_model.pb.encrypted"
 )
 
 func main() {
+	var modelBaseDir string
+	flag.StringVar(&modelBaseDir, "model_base_dir", "", "absolute path to base directory of the model")
+	flag.Parse()
+
 	log.SetPrefix("[Model Decryption] ")
 
-	key, err := loadKey()
-	if err != nil {
-		if !os.IsNotExist(err) {
+	if os.Getenv("EDG_DECRYPT_MODEL") == "1" {
+		key, err := loadKey()
+		if err != nil {
 			log.Panic(err)
 		}
-		// assume the model is present as a decrypted file, since we dont have a key
-		log.Println("no key found, Skipping model decryption")
-	}
 
-	if key != nil {
-		for {
-			if err := decryptModel(key); err != nil {
-				if !os.IsNotExist(err) {
-					log.Panic(err)
+		if key != nil {
+			for {
+				if err := decryptModel(key, modelBaseDir); err != nil {
+					if !os.IsNotExist(err) {
+						log.Panic(err)
+					}
+					// assume the model is present as a decrypted file, since we dont have an encrypted model
+					log.Printf("Missing File %v, Trying again in 10 Seconds\n", err)
+					time.Sleep(10 * time.Second)
 				}
-				// assume the model is present as a decrypted file, since we dont have an encrypted model
-				log.Printf("Missing File %v, Trying again in 10 Seconds\n", err)
-				time.Sleep(10 * time.Second)
 			}
 		}
 	}
@@ -71,7 +72,7 @@ func loadKey() ([]byte, error) {
 	return base64.StdEncoding.DecodeString(string(encodedKey))
 }
 
-func decryptModel(key []byte) error {
+func decryptModel(key []byte, modelBaseDir string) error {
 	// prepare ciphertext
 	log.Println("starting model decryption")
 	encryptedFile, err := os.Open(encryptedFilePath)
@@ -98,10 +99,10 @@ func decryptModel(key []byte) error {
 	}
 
 	// prepare output file
-	if _, err := os.Stat(filepath.Join(modelBaseDir, modelName)); os.IsNotExist(err) {
-		os.MkdirAll(filepath.Join(modelBaseDir, modelName, "1"), 0744)
+	if _, err := os.Stat(modelBaseDir); os.IsNotExist(err) {
+		os.MkdirAll(filepath.Join(modelBaseDir, "1"), 0744)
 	}
-	plaintextFile, err := os.OpenFile(path.Join(modelBaseDir, modelName, "1", modelFile), os.O_RDWR|os.O_CREATE, 0644)
+	plaintextFile, err := os.OpenFile(path.Join(modelBaseDir, "1", modelFile), os.O_RDWR|os.O_CREATE, 0644)
 	if err != nil {
 		return err
 	}

@@ -37,6 +37,8 @@ spec:
           value: "uuid"
         - name: EDG_MARBLE_DNS_NAMES
           value: "grpc.tf-serving.service.com"
+        - name: EDG_DECRYPT_MODEL
+          value: "1"
         securityContext:
           privileged: true
         volumeMounts:
