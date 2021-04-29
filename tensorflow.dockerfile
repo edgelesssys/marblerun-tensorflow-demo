@@ -41,6 +41,7 @@ RUN apt-get update \
         software-properties-common \
         libsgx-quote-ex-dev \
         libsgx-aesm-launch-plugin \
+        tar \
     && apt-get install -y --no-install-recommends apt-utils \
     && python3 -m pip install toml
 

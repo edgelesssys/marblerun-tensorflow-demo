@@ -12,7 +12,6 @@ metadata:
   labels:
     app: tf-server
 spec:
-  serviceName: "tf-server"
   replicas: 1
   selector:
     matchLabels:
@@ -72,11 +71,11 @@ spec:
 ---
 apiVersion: v1
 kind: Service
-metdata:
+metadata:
   name: tf-server
   namespace: tensorflow
 spec:
-  type: NodePort
+  type: LoadBalancer
   selector:
     app: tf-server
   ports:

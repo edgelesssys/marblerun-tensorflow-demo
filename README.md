@@ -62,6 +62,9 @@ pip3 install -r ./client/requirements.txt
 
 
 ## Running on Kubernetes
+
+Make sure your cluster supports SGX and out-of-process attestation. You can follow [the guide by Microsoft](https://docs.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-out-of-proc-attestation) to create a AKS cluster with all the needed resources.
+
 1. Start the Marblerun coordinator
     ```bash
     marblerun install --domain=grpc.tf-serving.service.com
@@ -113,7 +116,7 @@ pip3 install -r ./client/requirements.txt
 
 1. Upload the model to Kubernetes
     ```bash
-    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server:/encrypted/saved_model.pb.encrypted
+    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server:/graphene/Examples/tensorflow-marblerun/encrypted/saved_model.pb.encrypted
     ```
 
 1. Get Marblerun's certificate
@@ -121,7 +124,17 @@ pip3 install -r ./client/requirements.txt
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
 
-1. Submit a request
+1. Create mapping of the Tensorflow Model Server IP to it's domain name
+    * First get the IP Adress:
+        ```bash
+        tf_ip_addr=`kubectl get svc -n tensorflow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'`
+        ```
+    * Set the mapping in `/etc/hosts`:
+        ```bash
+        echo "${tf_ip_addr} grpc.tf-serving.service.com" >> /etc/hosts
+        ```
+
+1. Submit a request using encrypted traffic over gRPC
     ```bash
     python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt ./tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
