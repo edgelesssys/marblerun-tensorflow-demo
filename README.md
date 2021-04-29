@@ -42,7 +42,7 @@ pip3 install -r ./client/requirements.txt
 
 1. Upload the manifest
     ```bash
-    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    marblerun manifest set manifest.json $MARBLERUN
     ```
 
 1. Start the Tensorflow Model Server

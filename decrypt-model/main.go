@@ -8,7 +8,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"encoding/base64"
-	"flag"
 	"io"
 	"io/ioutil"
 	"log"
@@ -16,6 +15,7 @@ import (
 	"path"
 	"path/filepath"
 	"syscall"
+	"strings"
 	"time"
 )
 
@@ -26,10 +26,22 @@ var (
 
 func main() {
 	var modelBaseDir string
-	flag.StringVar(&modelBaseDir, "model_base_dir", "", "absolute path to base directory of the model")
-	flag.Parse()
+	args := os.Args
+    for i := 0; i < len(args); i++ {
+		if strings.Contains(args[i], "model_base_path=") {
+		    modelBaseDir = strings.Split(args[i], "=")[1]
+		    break
+		} else if strings.Contains(args[i], "model_base_path") && (i+1 < len(args)) {
+		    modelBaseDir = args[i+1]
+			break
+		}
+    }
 
 	log.SetPrefix("[Model Decryption] ")
+
+	if len(modelBaseDir) <= 0 {
+		log.Fatal("missing required flag [--model_base_path]")
+	}
 
 	if os.Getenv("EDG_DECRYPT_MODEL") == "1" {
 		key, err := loadKey()
@@ -46,6 +58,8 @@ func main() {
 					// assume the model is present as a decrypted file, since we dont have an encrypted model
 					log.Printf("Missing File %v, Trying again in 10 Seconds\n", err)
 					time.Sleep(10 * time.Second)
+				} else {
+					break
 				}
 			}
 		}
@@ -65,7 +79,7 @@ func main() {
 func loadKey() ([]byte, error) {
 	// load Key
 	log.Println("loading decryption key")
-	encodedKey, err := ioutil.ReadFile("model_key")
+	encodedKey, err := ioutil.ReadFile("./model_key")
 	if err != nil {
 		return nil, err
 	}
