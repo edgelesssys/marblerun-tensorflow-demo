@@ -14,8 +14,8 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"syscall"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -27,15 +27,15 @@ var (
 func main() {
 	var modelBaseDir string
 	args := os.Args
-    for i := 0; i < len(args); i++ {
+	for i := 0; i < len(args); i++ {
 		if strings.Contains(args[i], "model_base_path=") {
-		    modelBaseDir = strings.Split(args[i], "=")[1]
-		    break
+			modelBaseDir = strings.Split(args[i], "=")[1]
+			break
 		} else if strings.Contains(args[i], "model_base_path") && (i+1 < len(args)) {
-		    modelBaseDir = args[i+1]
+			modelBaseDir = args[i+1]
 			break
 		}
-    }
+	}
 
 	log.SetPrefix("[Model Decryption] ")
 

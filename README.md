@@ -2,9 +2,20 @@
 
 This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and Marblerun to take care of attestation and secret provisioning.
 
-### Install Dependencies
+## How it works
+![marblerun-tensorflow](illustration.svg)
 
-To run the python scripts we need some extra libraries. Make sure pip is up to date and run:
+1. The TensorFlow Aministrator uploads the Marblerun manifest to the Marblerun Coordinator, defining parameters under which programs are allowed to run
+2. The Coordinator performs attestation on the TensorFlow Serving application running on SGX using Graphene, and provides the application with secrets defined by the Marblerun manifest.
+3. The Administrator encrypts a pre-trained model and uplodas it to Kubernetes file storage
+4. The TensorFlow application reads and decrypts the model using a key provided by the coordinator
+5. A Client performs attestation of the Marblerun Coordinator and receives a certificate for connections to TensorFlow Serving
+6. The Client requests a prediction on some input data
+7. TensorFlow sends its response
+
+## Install Dependencies
+
+To run the python scripts we need python3 and some extra libraries. Make sure pip is up to date and run:
 ```bash
 pip3 install -r ./client/requirements.txt
 pipe install grpcio~=1.34.0
