@@ -29,6 +29,10 @@ spec:
       - image: ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: tf-server
+        resources:
+          requests:
+            memory: "4Gi"
+            cpu: 2
         env:
         - name: SGX_AESM_ADDR
           value: "1"
@@ -67,7 +71,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 110Mi
+      storage: 150Mi
 ---
 apiVersion: v1
 kind: Service

@@ -79,7 +79,7 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
 
 1. Start the Marblerun coordinator
     ```bash
-    marblerun install --domain=grpc.tf-serving.service.com
+    marblerun install --domain="grpc.tf-serving.service.com\,localhost"
     ```
 
 1. Wait for Marblerun to setup
@@ -128,7 +128,7 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
 
 1. Upload the model to Kubernetes
     ```bash
-    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server:/graphene/Examples/tensorflow-marblerun/encrypted/saved_model.pb.encrypted
+    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server-xxxxxxxxx-xxxxx:/graphene/Examples/tensorflow-marblerun/encrypted/saved_model.pb.encrypted
     ```
 
 1. Get Marblerun's certificate
