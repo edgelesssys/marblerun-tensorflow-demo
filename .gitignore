@@ -8,3 +8,4 @@ decrypt-model.h
 decrypt-model.so
 manifest.json
 encrypted
+graphene-files/decrypt-model

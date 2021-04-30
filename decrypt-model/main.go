@@ -1,6 +1,6 @@
 package main
 
-// #include <spawn.h>
+// #include <unistd.h>
 // #include <sys/wait.h>
 import "C"
 
@@ -70,7 +70,7 @@ func main() {
 	envp := toCArray(os.Environ())
 
 	// spawn service
-	if res := C.posix_spawn(nil, C.CString(os.Args[0]), nil, nil, &argv[0], &envp[0]); res != 0 {
+	if res := C.execve(C.CString(os.Args[0]), &argv[0], &envp[0]); res != 0 {
 		panic(syscall.Errno(res))
 	}
 	C.wait(nil)

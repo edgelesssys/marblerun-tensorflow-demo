@@ -4,9 +4,10 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 
 ### Install Dependencies
 
-To run the gRPC client written in python we need some extra libraries. Make sure pip is up to date and run:
+To run the python scripts we need some extra libraries. Make sure pip is up to date and run:
 ```bash
 pip3 install -r ./client/requirements.txt
+pipe install grpcio~=1.34.0
 ``` 
 
 ## Running as a Container
