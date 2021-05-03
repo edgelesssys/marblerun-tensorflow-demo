@@ -5,23 +5,20 @@
 loader.log_level = "$(GRAPHENE_DEBUG)"
 loader.preload = "file:$(GRAPHENE_DIR)/Runtime/libsysdb.so"
 
-# decrypt-model tries to decrypt a model and then spawns the application specified in argv0
-libos.entrypoint = "file:decrypt-model"
+# entrypoint is the Marblerun premain which then calls the executable in argv0
+libos.entrypoint = "file:premain-graphene"
 
 
 ################################# ARGUMENTS ###################################
 
-loader.argv0_override = "tensorflow_model_server"
-loader.argv_src_file = "file:tf_server.argv"
-loader.insecure__use_host_env = 1
+# the decryption process is executed first and will call the main executable
+# after it has finished
+loader.argv0_override = "decrypt-model"
 
 
 ################################# ENV VARS ####################################
 
-# Environment variables
-#loader.env.LD_PRELOAD = "./decrypt-model.so ./premain-graphene.so"
-# Execute Marblerun premain-graphene as preload library to set args, files and env vars
-loader.env.LD_PRELOAD = "./premain-graphene.so"
+loader.insecure__use_host_env = 1
 loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr$(ARCH_LIBDIR)"
 
 
@@ -92,9 +89,8 @@ sgx.trusted_files.usr_arch_libdir = "file:/usr$(ARCH_LIBDIR)/"
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
 
-sgx.trusted_files.premain = "file:premain-graphene.so"
+sgx.trusted_files.premain = "file:premain-graphene"
 sgx.trusted_files.decrypt = "file:decrypt-model"
-sgx.trusted_files.argv = "file:tf_server.argv"
 
 
 ############################# SGX: ALLOWED FILES ###############################

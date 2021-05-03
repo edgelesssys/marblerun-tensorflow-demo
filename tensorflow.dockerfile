@@ -8,9 +8,9 @@ FROM ghcr.io/edgelesssys/edgelessrt-dev AS build-premain
 COPY --from=pull /premain /premain
 WORKDIR /premain/build
 RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
-RUN make premain-graphene-so
+RUN make premain-graphene
 #COPY --from=pull /decrypt /decrypt
-#RUN ertgo build -buildmode=c-shared -o decrypt-model ./decrypt-model
+#RUN ertgo build -buildmode=pie -o decrypt-model ./decrypt-model
 
 # Use with fully built graphene as build context
 # place Makefile, tf_serving_entrypoint.sh and tensorflow_model_server.manifest.template inside ${LOCAL_GRAPHENEDIR}/Examples/tensorflow-marblerun
@@ -67,7 +67,7 @@ COPY ./Scripts ${GRAPHENEDIR}/Scripts
 
 WORKDIR ${WORK_BASE_PATH}
 
-COPY --from=build-premain /premain/build/premain-graphene.so ${WORK_BASE_PATH}
+COPY --from=build-premain /premain/build/premain-graphene ${WORK_BASE_PATH}
 #COPY --from=build-premain /decrypt/decrypt-model ${WORK_BASE_PATH}
 RUN mv ./tf_serving_entrypoint.sh /usr/bin
 

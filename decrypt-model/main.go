@@ -1,9 +1,5 @@
 package main
 
-// #include <unistd.h>
-// #include <sys/wait.h>
-import "C"
-
 import (
 	"crypto/aes"
 	"crypto/cipher"
@@ -65,15 +61,14 @@ func main() {
 		}
 	}
 
-	log.Printf("spawning main process %s\n", os.Args[0])
-	argv := toCArray(os.Args)
-	envp := toCArray(os.Environ())
+	// Make sure we are spawning the tensorflow_model_server executable
+	args[0] = "./tensorflow_model_server"
+	log.Printf("spawning main process %s\n",args[0])
 
 	// spawn service
-	if res := C.execve(C.CString(os.Args[0]), &argv[0], &envp[0]); res != 0 {
-		panic(syscall.Errno(res))
+	if err := syscall.Exec(args[0], args, os.Environ()); err != nil {
+		log.Panic(err)
 	}
-	C.wait(nil)
 }
 
 func loadKey() ([]byte, error) {
@@ -147,12 +142,4 @@ func decryptModel(key []byte, modelBaseDir string) error {
 
 	log.Println("finished decrypting model")
 	return nil
-}
-
-func toCArray(arr []string) []*C.char {
-	result := make([]*C.char, len(arr)+1)
-	for i, s := range arr {
-		result[i] = C.CString(s)
-	}
-	return result
 }
