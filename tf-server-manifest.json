@@ -1,8 +1,8 @@
 {
     "Packages": {
         "tensorflow-package": {
-            "Debug": 1,
-            "SignerID": "6959d9e9365e873100f119900919ce74b79f0fc588b4e0ebd985e9ef0399ea88",
+            "Debug": true,
+            "SignerID": "495287d7b2cc7b6da5d7644aae156aeecc73381d5705b4b486f4c7a6ca6dc3bb",
             "ProductID": 3,
             "SecurityVersion": 1
         }
@@ -29,7 +29,8 @@
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "model_key": "YOUR_KEY_HERE"
+                    "model_key": "YOUR_KEY_HERE",
+                    "/dev/attestation/protected_files_key": "{{ hex .Marblerun.SealKey }}"
                 },
                 "Env": {
                     "ISGX_DRIVER_PATH": "/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver",

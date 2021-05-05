@@ -64,7 +64,8 @@ fs.mount.cwd.uri = "file:$(TF-SERVING_DIR)"
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
 # size must be specified during signing. If TF-Serving needs more virtual memory
 # than the enclave size, Graphene will not be able to allocate it.
-sgx.enclave_size = "2G"
+sgx.enclave_size = "4G"
+loader.pal_internal_mem_size = "512M"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more
@@ -111,7 +112,7 @@ sgx.allowed_files.aesm_socket = "file:/var/run/aesmd/aesm.socket"
 
 # TF-Serving model
 sgx.allowed_files.sslcfg = "file:ssl.cfg"
-sgx.allowed_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
+sgx.protected_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
 sgx.allowed_files.encrypted_model = "file:encrypted/saved_model.pb.encrypted"
 sgx.allowed_files.uid = "file:uuid"
 sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"

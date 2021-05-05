@@ -4,7 +4,6 @@ set -e
 
 attestation_hosts="localhost:127.0.0.1"
 work_base_path=/graphene/Examples/tensorflow-marblerun
-ssl_config_file="ssl.cfg"
 mount_dir=`pwd -P`
 host_ports="8500-8501"
 image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
