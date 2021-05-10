@@ -12,7 +12,7 @@
             "Package": "tensorflow-package",
             "Parameters": {
                 "Argv": [
-                    "decrypt-model",
+                    "tensorflow_model_server",
                     "--model_name=resnet50",
                     "--model_base_path=/models/resnet50-v15-fp32",
                     "--port=8500",
@@ -25,12 +25,11 @@
                     "--tensorflow_session_parallelism=0",
                     "--tensorflow_intra_op_parallelism=0",
                     "--tensorflow_inter_op_parallelism=0",
-                    "--file_system_poll_wait_seconds=5"
+                    "--file_system_poll_wait_seconds=10"
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "model_key": "YOUR_KEY_HERE",
-                    "/dev/attestation/protected_files_key": "{{ hex .Marblerun.SealKey }}"
+                    "/dev/attestation/protected_files_key": "YOUR_KEY_HERE"
                 },
                 "Env": {
                     "ISGX_DRIVER_PATH": "/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver",

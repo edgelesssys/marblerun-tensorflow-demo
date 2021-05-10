@@ -40,16 +40,19 @@ pipe install grpcio~=1.34.0
     ./tools/download_model.sh
     models_abs_dir=`pwd -P`
     python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/models/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/models/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    mkdir plain
+    mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use `encrypt_model.go` to generate an AES key and encrypt the model. The key will be saved to `model_key` in base64 encoding
+1. Use Graphenes `pf_crypt` to generate a key and encrypt the model.
     ```bash
-    go run ./tools/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
+    pf_crypt gen-key --wrap-key model_key
+    pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
+1. Set the model key in Marbleruns manifest
     ```bash
-    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(cat model_key)|g" > manifest.json
+    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
     ```
 
 1. Upload the manifest
@@ -98,16 +101,19 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
     ./tools/download_model.sh
     models_abs_dir=`pwd -P`
     python3 ./tools/model_graph_to_saved_model.py --import_path ${models_abs_dir}/models/resnet50-v15-fp32/resnet50-v15-fp32.pb --export_dir ${models_abs_dir}/models/resnet50-v15-fp32 --model_version 1 --inputs input --outputs predict
+    mkdir plain
+    mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use `encrypt_model.go` to generate a AES key and encrypt the model
+1. Use Graphenes `pf_crypt` to generate a key and encrypt the model.
     ```bash
-    go run ./tools/encrypt_model.go -k model_key -m models/resnet50-v15-fp32/1/saved_model.pb
+    pf_crypt gen-key --wrap-key model_key
+    pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the content of `model_key` in `tf-server-manifest.json` as the value for `model_key.priv` in `Marbles/tf-server/Parameters/Files`
+1. Set the model key in Marbleruns manifest
     ```bash
-    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(cat model_key)|g" > manifest.json
+    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
     ```
 
 1. Upload the manifest:
@@ -128,7 +134,7 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
 
 1. Upload the model to Kubernetes
     ```bash
-    kubectl cp ./encrypted/saved_model.pb.encrypted tensorflow/tf-server-xxxxxxxxx-xxxxx:/graphene/Examples/tensorflow-marblerun/encrypted/saved_model.pb.encrypted
+    kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/tf-server-xxxxxxxxx-xxxxx:/graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 1. Get Marblerun's certificate
@@ -167,11 +173,6 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
 ## Building the Docker Image
 
 *Prerequisite*: Graphene is set up and example applications are working correctly with SGX.
-
-1. Build the model decryption premain
-    ```bash
-    ertgo build -buildmode=pie -o graphene-files/decrypt-model ./decrypt-model
-    ```
 
 1. Assuming you have built Graphene in `/graphene` copy everything from `./graphene-files` into `/graphene/Examples/tensorflow-marblerun`
     ```bash
