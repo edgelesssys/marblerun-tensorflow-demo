@@ -5,9 +5,9 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 ## How it works
 ![marblerun-tensorflow](illustration.svg)
 
-1. The TensorFlow Aministrator uploads the Marblerun manifest to the Marblerun Coordinator, defining parameters under which programs are allowed to run
-2. The Coordinator performs attestation on the TensorFlow Serving application running on SGX using Graphene, and provides the application with secrets defined by the Marblerun manifest.
-3. The Administrator encrypts a pre-trained model and uplodas it to Kubernetes file storage
+1. The TensorFlow Administrator uploads the Marblerun manifest to the Marblerun Coordinator, defining parameters under which programs are allowed to run
+2. The Administrator encrypts a pre-trained model and uploads it to Kubernetes file storage
+3. The Coordinator performs attestation on the TensorFlow Serving application running on SGX using Graphene, and provides the application with secrets defined by the Marblerun manifest
 4. The TensorFlow application reads and decrypts the model using a key provided by the coordinator
 5. A Client performs attestation of the Marblerun Coordinator and receives a certificate for connections to TensorFlow Serving
 6. The Client requests a prediction on some input data
@@ -44,13 +44,13 @@ pipe install grpcio~=1.34.0
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphenes `pf_crypt` to generate a key and encrypt the model.
+1. Use Graphene's `pf_crypt` to generate a key and encrypt the model.
     ```bash
     pf_crypt gen-key --wrap-key model_key
     pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the model key in Marbleruns manifest
+1. Set the model key in Marblerun's manifest
     ```bash
     cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
     ```
@@ -65,7 +65,7 @@ pipe install grpcio~=1.34.0
     ./tools/run_tf_image.sh
     ```
 
-1. Get Marbleruns intermediate certificate to connect to the model server
+1. Get Marblerun's intermediate certificate to connect to the model server
     ```bash
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
@@ -105,13 +105,13 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphenes `pf_crypt` to generate a key and encrypt the model.
+1. Use Graphene's `pf_crypt` to generate a key and encrypt the model.
     ```bash
     pf_crypt gen-key --wrap-key model_key
     pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the model key in Marbleruns manifest
+1. Set the model key in Marblerun's manifest
     ```bash
     cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
     ```
