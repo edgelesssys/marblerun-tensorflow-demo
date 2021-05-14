@@ -40,15 +40,13 @@ spec:
           value: "uuid"
         - name: EDG_MARBLE_DNS_NAMES
           value: "grpc.tf-serving.service.com"
-        - name: EDG_DECRYPT_MODEL
-          value: "1"
         securityContext:
           privileged: true
         volumeMounts:
         - name: aesmd-socket
           mountPath: /var/run/aesmd
         - name: model-dir
-          mountPath: /graphene/Examples/tensorflow-marblerun/models
+          mountPath: /graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/
       {{- with .Values.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8  }}

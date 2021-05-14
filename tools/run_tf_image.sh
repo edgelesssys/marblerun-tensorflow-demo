@@ -23,5 +23,4 @@ docker run \
     -e EDG_UUID_FILE="/tf_server-uid/uuid-file" \
     -e EDG_MARBLE_COORDINATOR_ADDR=grpc.tf-serving.service.com:2001 \
     -e EDG_MARBLE_DNS_NAMES=grpc.tf-serving.service.com \
-    -e EDG_DECRYPT_MODEL=1 \
     ${image_id}
