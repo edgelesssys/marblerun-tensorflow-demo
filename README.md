@@ -5,15 +5,15 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 ## How it works
 ![marblerun-tensorflow](illustration.svg)
 
-1. The TensorFlow Administrator uploads the Marblerun manifest to the Marblerun Coordinator, defining parameters under which programs are allowed to run
-2. The Administrator encrypts a pre-trained model and uploads it to Kubernetes file storage
-3. The Coordinator performs attestation on the TensorFlow Serving application running on SGX using Graphene, and provides the application with secrets defined by the Marblerun manifest
-4. The TensorFlow application reads and decrypts the model using a key provided by the coordinator
-5. A Client performs attestation of the Marblerun Coordinator and receives a certificate for connections to TensorFlow Serving
-6. The Client requests a prediction on some input data
-7. TensorFlow sends its response
+1. The TensorFlow admin uploads the Marblerun manifest to the Marblerun coordinator, defining parameters under which programs are allowed to run.
+1. The admin encrypts a pre-trained model and uploads it to Kubernetes file storage.
+1. The coordinator attests the TensorFlow Serving app and provisions it with cryptographic keys in accordance with the manifest.
+1. The app decrypts the model. (It obtained the corresponding cryptographic key in the previous step.)
+1. The client attests the coordinator. It obtains a trusted TLS certificate for connections to the app.
+1. The client requests a prediction over the attested TLS connection.
+1. The app sends its response.
 
-## Install Dependencies
+## Install dependencies
 
 To run the python scripts we need python3 and some extra libraries. Make sure pip is up to date and run:
 ```bash
@@ -21,7 +21,7 @@ pip3 install -r ./client/requirements.txt
 pipe install grpcio~=1.34.0
 ``` 
 
-## Running as a Container
+## Running without Kubernetes
 
 1. Create a mapping of machine B's IP adress (the machine you plan to run the docker image on) to the Tensorflow Serving domain name (127.0.0.1 if you are running on just one machine)
     ```bash
@@ -75,8 +75,7 @@ pipe install grpcio~=1.34.0
     python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
 
-
-## Running on Kubernetes
+## Running on Kubernetes (recommended)
 
 Make sure your cluster supports SGX and out-of-process attestation. You can follow [the guide by Microsoft](https://docs.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-out-of-proc-attestation) to create a AKS cluster with all the needed resources.
 
@@ -85,7 +84,7 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
     marblerun install --domain="grpc.tf-serving.service.com\,localhost"
     ```
 
-1. Wait for Marblerun to setup
+1. Wait for Marblerun to set-up
     ```bash
     marblerun check
     ```
@@ -142,7 +141,7 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
 
-1. Create mapping of the Tensorflow Model Server IP to it's domain name
+1. Create mapping of the Tensorflow Model Server IP to its domain name
     * First get the IP Adress:
         ```bash
         tf_ip_addr=`kubectl get svc -n tensorflow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'`
