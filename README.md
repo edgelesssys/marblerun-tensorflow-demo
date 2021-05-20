@@ -23,7 +23,7 @@ pip3 install -r ./client/requirements.txt
 pipe install grpcio~=1.34.0
 ```
 
-## Running the example
+## Running the demo
 
 We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and Marblerun.
 However you may also build your own by following the steps [of this tutorial](#Building-the-Docker-Image).
