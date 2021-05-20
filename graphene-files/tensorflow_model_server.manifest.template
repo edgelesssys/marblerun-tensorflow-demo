@@ -18,7 +18,9 @@ loader.argv0_override = "tensorflow_model_server"
 
 ################################# ENV VARS ####################################
 
+# Forward environment variables from the host. Don't use this on production!
 loader.insecure__use_host_env = 1
+
 loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr$(ARCH_LIBDIR)"
 
 
@@ -120,4 +122,3 @@ sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"
 sgx.remote_attestation = 1
 sgx.isvprodid = 3
 sgx.isvsvn    = 1
-

@@ -1,6 +1,8 @@
-# Privacy Preserving Machine Learning Demo using Tensorflow 
+# Privacy Preserving Machine Learning Demo using Tensorflow
 
 This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and Marblerun to take care of attestation and secret provisioning.
+
+**Warning**: This sample enables `loader.insecure__use_host_env` in [tensorflow_model_server.manifest.template](graphene-files/tensorflow_model_server.manifest.template). Don't use this on production until [secure forwarding of host environment variables](https://github.com/oscarlab/graphene/issues/2356) will be available.
 
 ## How it works
 ![marblerun-tensorflow](illustration.svg)
@@ -19,7 +21,7 @@ To run the python scripts we need python3 and some extra libraries. Make sure pi
 ```bash
 pip3 install -r ./client/requirements.txt
 pipe install grpcio~=1.34.0
-``` 
+```
 
 ## Running without Kubernetes
 
