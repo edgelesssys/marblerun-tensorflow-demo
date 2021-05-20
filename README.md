@@ -23,7 +23,15 @@ pip3 install -r ./client/requirements.txt
 pipe install grpcio~=1.34.0
 ```
 
-## Running without Kubernetes
+## Running the example
+
+We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and Marblerun.
+However you may also build your own by following the steps [of this tutorial](#Building-the-Docker-Image).
+Note that, if you plan to build your own image, you will have to change the image name in `kubernetes/templates/tf-server.yaml`.
+
+### As a standalone
+
+You can run the demo with Marblerun as a standalone by following these steps.
 
 1. Create a mapping of machine B's IP adress (the machine you plan to run the docker image on) to the Tensorflow Serving domain name (127.0.0.1 if you are running on just one machine)
     ```bash
@@ -63,6 +71,7 @@ pipe install grpcio~=1.34.0
     ```
 
 1. Start the Tensorflow Model Server
+    This will pull our docker image. If you wish to use your own change `image_id` in `tools/run_tf_image.sh` to the name of your image.
     ```bash
     ./tools/run_tf_image.sh
     ```
@@ -77,7 +86,10 @@ pipe install grpcio~=1.34.0
     python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
 
-## Running on Kubernetes (recommended)
+### On Kubernetes
+
+This tutorial will show you how to run the demo on Kubernetes. 
+A running cluster is required.
 
 Make sure your cluster supports SGX and out-of-process attestation. You can follow [the guide by Microsoft](https://docs.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-out-of-proc-attestation) to create a AKS cluster with all the needed resources.
 
