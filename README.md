@@ -20,10 +20,17 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 To run the python scripts we need python3 and some extra libraries. Make sure pip is up to date and run:
 ```bash
 pip3 install -r ./client/requirements.txt
-pipe install grpcio~=1.34.0
+pip3 install grpcio~=1.34.0
 ```
 
-## Running without Kubernetes
+## Running the demo
+
+We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and Marblerun.
+You can also [build it yourself](#Building-the-Docker-Image).
+
+### Standalone
+
+You can run the demo with Marblerun in standalone mode as follows:
 
 1. Create a mapping of machine B's IP adress (the machine you plan to run the docker image on) to the Tensorflow Serving domain name (127.0.0.1 if you are running on just one machine)
     ```bash
@@ -63,8 +70,9 @@ pipe install grpcio~=1.34.0
     ```
 
 1. Start the Tensorflow Model Server
+    This will pull our docker image. If you wish to use your own, specify the name of your image instead.
     ```bash
-    ./tools/run_tf_image.sh
+    ./tools/run_tf_image.sh ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
     ```
 
 1. Get Marblerun's intermediate certificate to connect to the model server
@@ -77,9 +85,14 @@ pipe install grpcio~=1.34.0
     python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
 
-## Running on Kubernetes (recommended)
+### On Kubernetes
+
+This tutorial will show you how to run the demo on Kubernetes. 
+A running cluster is required.
 
 Make sure your cluster supports SGX and out-of-process attestation. You can follow [the guide by Microsoft](https://docs.microsoft.com/en-us/azure/confidential-computing/confidential-nodes-out-of-proc-attestation) to create a AKS cluster with all the needed resources.
+
+If you built your own image you will have to change the image name in `kubernetes/templates/tf-server.yaml`.
 
 1. Start the Marblerun coordinator
     ```bash
