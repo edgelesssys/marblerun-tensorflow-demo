@@ -29,13 +29,39 @@
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "/dev/attestation/protected_files_key": "YOUR_KEY_HERE"
-                },
-                "Env": {
-                    "ISGX_DRIVER_PATH": "/graphene/Pal/src/host/Linux-SGX/linux-sgx-driver",
-                    "WORK_BASE_PATH": "/graphene/Examples/tensorflow-marblerun"
+                    "/dev/attestation/protected_files_key": "{{ hex .Secrets.pf_key }}"
                 }
             }
+        }
+    },
+    "Secrets": {
+        "pf_key": {
+            "Type": "symmetric-key",
+            "Size": 128,
+            "UserDefined": true
+        }
+    },
+    "Users": {
+        "tf-admin": {
+            "Certificate": "USER_CERT",
+            "Roles": [
+                "secret-manager"
+            ],
+            "WriteSecret": [
+                "pf_key"
+            ]
+        }
+    },
+    "Roles": {
+        "secret-manager": {
+            "ResourceType": "Secrets",
+            "ResourceNames": [
+                "pf_key"
+            ],
+            "Actions": [
+                "WriteSecret",
+                "ReadSecret"
+            ]
         }
     }
 }

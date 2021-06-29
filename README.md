@@ -59,14 +59,25 @@ You can run the demo with Marblerun in standalone mode as follows:
     pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the model key in Marblerun's manifest
+1. Generate a user certificate and key.
     ```bash
-    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
-1. Upload the manifest
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
     ```bash
-    marblerun manifest set manifest.json $MARBLERUN
+    awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
+    ```
+
+1. Upload the manifest:
+    ```bash
+    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    ```
+
+1. Upload the model key to Marblerun.
+    ```bash
+    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
+    marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
 1. Start the Tensorflow Model Server
@@ -75,7 +86,7 @@ You can run the demo with Marblerun in standalone mode as follows:
     ./tools/run_tf_image.sh ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
     ```
 
-1. Get Marblerun's intermediate certificate to connect to the model server
+1. Get Marblerun's intermediate certificate to connect to the model server.
     ```bash
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
@@ -125,14 +136,25 @@ If you built your own image you will have to change the image name in `kubernete
     pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
-1. Set the model key in Marblerun's manifest
+1. Generate a user certificate and key.
     ```bash
-    cat tf-server-manifest.json | sed "s|YOUR_KEY_HERE|$(hexdump -ve '1/1 "%02x"' model_key)|g" > manifest.json
+    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout user_credentials.key -out user_credentials.crt
+    ```
+
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
+    ```bash
+    awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
     ```
 
 1. Upload the manifest:
     ```bash
-    marblerun manifest set manifest.json $MARBLERUN
+    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    ```
+
+1. Upload the model key to Marblerun.
+    ```bash
+    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
+    marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
 1. Create and add the tensorflow namespace to Marblerun
