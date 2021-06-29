@@ -46,12 +46,6 @@
             "Certificate": "USER_CERT",
             "Roles": [
                 "secret-manager"
-<<<<<<< HEAD
-            ],
-            "WriteSecret": [
-                "pf_key"
-=======
->>>>>>> 4dc8791... wip update to use secrets endpoint
             ]
         }
     },
@@ -62,12 +56,8 @@
                 "pf_key"
             ],
             "Actions": [
-<<<<<<< HEAD
                 "WriteSecret",
                 "ReadSecret"
-=======
-                "WriteSecret"
->>>>>>> 4dc8791... wip update to use secrets endpoint
             ]
         }
     }

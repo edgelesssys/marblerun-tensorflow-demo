@@ -15,8 +15,6 @@ docker run \
     --device /dev/sgx \
     --network host \
     --add-host=${attestation_hosts} \
-    --entrypoint bash \
-    -p ${host_ports}:8500-8501 \
     -v ${mount_dir}/models:${work_base_path}/models \
     -v /var/run/aesmd:/var/run/aesmd \
     -e EDG_MARBLE_TYPE=tf-server \

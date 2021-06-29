@@ -6,7 +6,7 @@ loader.log_level = "{{ log_level }}"
 loader.preload = "file:{{ graphene.libos }}"
 
 # entrypoint is the Marblerun premain which then calls the executable in argv0
-libos.entrypoint = "file:premain-graphene"
+libos.entrypoint = "premain-libos"
 
 
 ################################# ARGUMENTS ###################################
@@ -91,7 +91,7 @@ sgx.trusted_files.usr_arch_libdir = "file:/usr{{ arch_libdir }}/"
 
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
-sgx.trusted_files.premain = "file:premain-graphene"
+sgx.trusted_files.premain = "file:premain-libos"
 
 
 ############################# SGX: ALLOWED FILES ###############################
