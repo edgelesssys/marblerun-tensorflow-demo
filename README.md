@@ -61,7 +61,7 @@ You can run the demo with Marblerun in standalone mode as follows:
 
 1. Generate a user certificate and key.
     ```bash
-    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout user_credentials.key -out user_credentials.crt
+    openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
 1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
@@ -138,7 +138,7 @@ If you built your own image you will have to change the image name in `kubernete
 
 1. Generate a user certificate and key.
     ```bash
-    openssl req -x509 -newkey rsa:4096 -sha256 -days 3650 -nodes -keyout user_credentials.key -out user_credentials.crt
+    openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
 1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
