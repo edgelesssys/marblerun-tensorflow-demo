@@ -19,6 +19,7 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 
 To run the python scripts we need python3 and some extra libraries. Make sure pip is up to date and run:
 ```bash
+pip3 install --upgrade pip
 pip3 install -r ./client/requirements.txt
 pip3 install grpcio~=1.34.0
 ```
