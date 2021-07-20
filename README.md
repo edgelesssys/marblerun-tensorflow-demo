@@ -1,3 +1,5 @@
+![banner](banner.png)
+
 # Privacy Preserving Machine Learning Demo using Tensorflow
 
 This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and Marblerun to take care of attestation and secret provisioning.
@@ -7,13 +9,14 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 ## How it works
 ![marblerun-tensorflow](illustration.svg)
 
-1. The TensorFlow admin uploads the Marblerun manifest to the Marblerun coordinator, defining parameters under which programs are allowed to run.
-1. The admin encrypts a pre-trained model and uploads it to Kubernetes file storage.
-1. The coordinator attests the TensorFlow Serving app and provisions it with cryptographic keys in accordance with the manifest.
-1. The app decrypts the model. (It obtained the corresponding cryptographic key in the previous step.)
-1. The client attests the coordinator. It obtains a trusted TLS certificate for connections to the app.
-1. The client requests a prediction over the attested TLS connection.
-1. The app sends its response.
+1.	The model owner encrypts the model with their private key and passes the public key to the administrator.
+1.	The administrator creates a Marblerun manifest defining the topology and components of the confidential ML deployment. The manifest also specifies that the model owner’s public key should be passed to the TensorFlow Serving application.
+1.	The administrator deploys Marblerun with the manifest.
+1.	The administrator deploys the confidential ML application.
+1.	Marblerun takes care of authentication and bootstrapping procedures.
+1.	The model owner verifies the deployment via Marblerun and uploads the encrypted model securely to the TensorFlow Serving application.
+1.	The application can decrypt the model inside the enclave via the provisioned key.
+1.	Clients can verify the deployment via Marblerun and connect securely to the inference service, knowing that their data is only accessible inside the enclave and their predictions are made by the integrity-protected TensorFlow Serving application.
 
 ## Install dependencies
 
