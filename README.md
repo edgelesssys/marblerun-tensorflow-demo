@@ -74,7 +74,7 @@ If you built your own image you will have to change the image name in `kubernete
     openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
-1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json` (replacing `USER_CERT`)
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
     ```
@@ -103,7 +103,7 @@ If you built your own image you will have to change the image name in `kubernete
 
 1. Upload the model to Kubernetes
     ```bash
-    kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/tf-server-xxxxxxxxx-xxxxx:/graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
+    kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/`kubectl -n tensorflow get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'`:/graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 1. Get Marblerun's certificate
@@ -175,7 +175,7 @@ You can run the demo with Marblerun in standalone mode as follows:
     openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
-1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`(replacing `USER_CERT`)
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
     ```
