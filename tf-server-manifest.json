@@ -2,8 +2,8 @@
     "Packages": {
         "tensorflow-package": {
             "Debug": true,
-            "SignerID": "495287d7b2cc7b6da5d7644aae156aeecc73381d5705b4b486f4c7a6ca6dc3bb",
-            "ProductID": 3,
+            "SignerID": "77bbfb67437edc69f805507c7b305bf1c9f3117c54873b0a577718add0cf03c3",
+            "ProductID": 15,
             "SecurityVersion": 1
         }
     },
