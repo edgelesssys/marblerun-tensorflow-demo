@@ -2,8 +2,8 @@
     "Packages": {
         "tensorflow-package": {
             "Debug": true,
-            "SignerID": "495287d7b2cc7b6da5d7644aae156aeecc73381d5705b4b486f4c7a6ca6dc3bb",
-            "ProductID": 3,
+            "SignerID": "43361affedeb75affee9baec7e054a5e14883213e5a121b67d74a0e12e9d2b7a",
+            "ProductID": 15,
             "SecurityVersion": 1
         }
     },
@@ -46,9 +46,6 @@
             "Certificate": "USER_CERT",
             "Roles": [
                 "secret-manager"
-            ],
-            "WriteSecret": [
-                "pf_key"
             ]
         }
     },

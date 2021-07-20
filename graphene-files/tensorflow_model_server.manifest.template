@@ -2,11 +2,11 @@
 
 # Graphene environment, including the path to the library OS and the debug
 # the default is "error" for non-debug builds, and "debug" for debug builds.
-loader.log_level = "$(GRAPHENE_DEBUG)"
-loader.preload = "file:$(GRAPHENE_DIR)/Runtime/libsysdb.so"
+loader.log_level = "{{ log_level }}"
+loader.preload = "file:{{ graphene.libos }}"
 
 # entrypoint is the Marblerun premain which then calls the executable in argv0
-libos.entrypoint = "file:premain-graphene"
+libos.entrypoint = "premain-libos"
 
 
 ################################# ARGUMENTS ###################################
@@ -19,15 +19,15 @@ loader.argv0_override = "tensorflow_model_server"
 ################################# ENV VARS ####################################
 
 # Forward environment variables from the host. Don't use this on production!
-loader.insecure__use_host_env = 1
+loader.insecure__use_host_env = true
 
-loader.env.LD_LIBRARY_PATH = "/lib:$(ARCH_LIBDIR):/usr$(ARCH_LIBDIR)"
+loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}"
 
 
 ################################## SIGNALS ####################################
 
 # Allow for injecting SIGTERM signal from the host.
-sys.enable_sigterm_injection = 1
+sys.enable_sigterm_injection = true
 
 
 ################################# MOUNT FS  ###################################
@@ -38,17 +38,17 @@ sys.enable_sigterm_injection = 1
 # Default glibc files, mounted from the Runtime directory in GRAPHENE_DIR.
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
-fs.mount.lib.uri = "file:$(GRAPHENE_DIR)/Runtime"
+fs.mount.lib.uri = "file:{{ graphene.runtimedir() }}"
 
 # Host-level libraries (e.g., /lib/x86_64-linux-gnu) required by TF-Serving.
 fs.mount.lib2.type = "chroot"
-fs.mount.lib2.path = "$(ARCH_LIBDIR)"
-fs.mount.lib2.uri = "file:$(ARCH_LIBDIR)"
+fs.mount.lib2.path = "{{ arch_libdir }}"
+fs.mount.lib2.uri = "file:{{ arch_libdir }}"
 
 # More host-level libraries (e.g., /usr/lib/x86_64-linux-gnu) required by TF-Serving.
 fs.mount.lib3.type = "chroot"
-fs.mount.lib3.path = "/usr$(ARCH_LIBDIR)"
-fs.mount.lib3.uri = "file:/usr$(ARCH_LIBDIR)"
+fs.mount.lib3.path = "/usr{{ arch_libdir }}"
+fs.mount.lib3.uri = "file:/usr{{ arch_libdir }}"
 
 # Host-level directory to NSS files required by Glibc + NSS libs.
 fs.mount.etc.type = "chroot"
@@ -57,8 +57,8 @@ fs.mount.etc.uri = "file:/etc"
 
 # Mount the current working directory
 fs.mount.cwd.type = "chroot"
-fs.mount.cwd.path = "$(TF-SERVING_DIR_ABSPATH)"
-fs.mount.cwd.uri = "file:$(TF-SERVING_DIR)"
+fs.mount.cwd.path = "{{ tf_serving_dir_abspath }}"
+fs.mount.cwd.uri = "file:{{ tf_serving_dir }}"
 
 
 ############################### SGX: GENERAL ##################################
@@ -78,21 +78,20 @@ loader.pal_internal_mem_size = "512M"
 #
 # We (somewhat arbitrarily) specify 512 threads since TF-Serving is multithreaded.
 sgx.thread_num = 512
-sgx.nonpie_binary = 1
+sgx.nonpie_binary = true
 
 
 ############################# SGX: TRUSTED FILES ###############################
 
 # SGX trusted libraries
 
-sgx.trusted_files.runtime = "file:$(GRAPHENE_DIR)/Runtime/"
-sgx.trusted_files.arch_libdir = "file:$(ARCH_LIBDIR)/"
-sgx.trusted_files.usr_arch_libdir = "file:/usr$(ARCH_LIBDIR)/"
+sgx.trusted_files.runtime = "file:{{ graphene.runtimedir() }}"
+sgx.trusted_files.arch_libdir = "file:{{ arch_libdir }}/"
+sgx.trusted_files.usr_arch_libdir = "file:/usr{{ arch_libdir }}/"
 
 # TF-Serving runtime
 sgx.trusted_files.tfexec = "file:tensorflow_model_server"
-
-sgx.trusted_files.premain = "file:premain-graphene"
+sgx.trusted_files.premain = "file:premain-libos"
 
 
 ############################# SGX: ALLOWED FILES ###############################
@@ -119,6 +118,6 @@ sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"
 
 ############################# SGX: Attestation ###############################
 
-sgx.remote_attestation = 1
-sgx.isvprodid = 3
+sgx.remote_attestation = true
+sgx.isvprodid = 15
 sgx.isvsvn    = 1

@@ -197,7 +197,7 @@ You can run the demo with Marblerun in standalone mode as follows:
 1. Start the Tensorflow Model Server
     This will pull our docker image. If you wish to use your own, specify the name of your image instead.
     ```bash
-    ./tools/run_tf_image.sh ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+    ./tools/run_tf_image.sh
     ```
 
 1. Get Marblerun's intermediate certificate to connect to the model server.
@@ -212,15 +212,12 @@ You can run the demo with Marblerun in standalone mode as follows:
 
 ## Building the Docker Image
 
-*Prerequisite*: Graphene is set up and example applications are working correctly with SGX.
-
-1. Assuming you have built Graphene in `/graphene` copy everything from `./graphene-files` into `/graphene/Examples/tensorflow-marblerun`
+1. Generate a signing key
     ```bash
-    mkdir /graphene/Examples/tensorflow-marblerun
-    cp ./graphene-files/* /graphene/Examples/tensorflow-marblerun
+    openssl genrsa -3 -out enclave-key.pem 3072
     ```
 
 1. Next we can build the Docker image:
     ```bash
-    docker buildx build --tag ghcr.io/edgelesssys/tensorflow-graphene-marble:latest -f tensorflow.dockerfile /graphene
+    docker buildx build --secret id=signingkey,src=enclave-key.pem --tag ghcr.io/edgelesssys/tensorflow-graphene-marble:latest .
     ```

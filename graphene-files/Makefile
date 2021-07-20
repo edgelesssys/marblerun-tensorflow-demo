@@ -16,18 +16,15 @@ GRAPHENE_DIR ?= /graphene
 SGX_SIGNER_KEY ?= $(GRAPHENE_DIR)/Pal/src/host/Linux-SGX/signer/enclave-key.pem
 
 TF-SERVING_DIR := /usr/bin
-MODEL_DIR := $(GRAPHENE_DIR)/Examples/tensorflow-marblerun/models
 
 ifeq ($(DEBUG),1)
-GRAPHENE_DEBUG = debug
-TF-SERVING_BUILD = Debug
+GRAPHENE_LOG_LEVEL = debug
 else
-GRAPHENE_DEBUG = error
-TF-SERVING_BUILD = Release
+GRAPHENE_LOG_LEVEL = error
 endif
 
 .PHONY: all
-all: tensorflow_model_server tensorflow_model_server.manifest pal_loader
+all: tensorflow_model_server tensorflow_model_server.manifest
 
 ifeq ($(SGX),1)
 all: tensorflow_model_server tensorflow_model_server.manifest.sgx tensorflow_model_server.sig tensorflow_model_server.token
@@ -36,35 +33,29 @@ endif
 include $(GRAPHENE_DIR)/Scripts/Makefile.configs
 
 tensorflow_model_server.manifest: tensorflow_model_server.manifest.template
-	sed -e 's|$$(GRAPHENE_DIR)|'"$(GRAPHENE_DIR)"'|g' \
-	    -e 's|$$(GRAPHENE_DEBUG)|'"$(GRAPHENE_DEBUG)"'|g' \
-	    -e 's|$$(TF-SERVING_DIR)|'"$(TF-SERVING_DIR)"'|g' \
-	    -e 's|$$(TF-SERVING_DIR_ABSPATH)|'"$(abspath $(TF-SERVING_DIR))"'|g' \
-	    -e 's|$$(MODEL_DIR)|'"$(MODEL_DIR)"'|g' \
-	    -e 's|$$(TF-SERVING_BUILD)|'"$(TF-SERVING_BUILD)"'|g' \
-	    -e 's|$$(ARCH_LIBDIR)|'"$(ARCH_LIBDIR)"'|g' \
-	    $< > $@
+	graphene-manifest \
+		-Dlog_level=$(GRAPHENE_LOG_LEVEL) \
+		-Darch_libdir=$(ARCH_LIBDIR) \
+		-Dtf_serving_dir=$(TF-SERVING_DIR) \
+		-Dtf_serving_dir_abspath=$(abspath $(TF-SERVING_DIR)) \
+		$< >$@
 
 # Generating the SGX-specific manifest (tensorflow_model_server.manifest.sgx), the enclave signature,
 # and the token for enclave initialization.
 tensorflow_model_server.manifest.sgx: tensorflow_model_server.manifest
-	$(GRAPHENE_DIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-sign \
-		-libpal $(GRAPHENE_DIR)/Runtime/libpal-Linux-SGX.so \
-		-key $(SGX_SIGNER_KEY) \
-		-manifest $< -output $@
-#		-exec tensorflow_model_server
+	graphene-sgx-sign \
+		--key $(SGX_SIGNER_KEY) \
+		--manifest tensorflow_model_server.manifest \
+		--output tensorflow_model_server.manifest.sgx
 
 tensorflow_model_server.sig: tensorflow_model_server.manifest.sgx
 
 tensorflow_model_server.token: tensorflow_model_server.sig
-	$(GRAPHENE_DIR)/Pal/src/host/Linux-SGX/signer/pal-sgx-get-token -sig $< -output $@
+	graphene-sgx-get-token --sig $< --output $@
 
 tensorflow_model_server:
 	ln -s $(TF-SERVING_DIR)/tensorflow_model_server $@
 
-pal_loader:
-	ln -s $(GRAPHENE_DIR)/Runtime/pal_loader $@
-
 .PHONY: clean
 clean:
-	$(RM) *.manifest *.manifest.sgx *.token *.sig tensorflow_model_server pal_loader
+	$(RM) *.manifest *.manifest.sgx *.token *.sig tensorflow_model_server
