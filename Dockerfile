@@ -28,6 +28,8 @@ RUN ninja -C build install
 
 RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | tee /etc/apt/sources.list.d/tensorflow-serving.list && curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add -
 RUN apt-get update && apt-get install -y tensorflow-model-server
+# running apt install restores the symlink for libsgx-dcap-default-qpl, which was removed by the ert base image. Remove it again so we can use the az-dcap-client instead
+RUN rm -rf /usr/lib/x86_64-linux-gnu/libdcap_quoteprov.so.1
 
 COPY ./graphene-files/ /graphene/Examples/tensorflow-marblerun/
 WORKDIR /graphene/Examples/tensorflow-marblerun
