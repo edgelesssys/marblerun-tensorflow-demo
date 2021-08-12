@@ -5,7 +5,7 @@
 loader.log_level = "{{ log_level }}"
 loader.preload = "file:{{ graphene.libos }}"
 
-# entrypoint is the Marblerun premain which then calls the executable in argv0
+# entrypoint is the MarbleRun premain which then calls the executable in argv0
 libos.entrypoint = "premain-libos"
 
 

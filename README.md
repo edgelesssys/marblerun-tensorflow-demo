@@ -2,7 +2,7 @@
 
 # Privacy Preserving Machine Learning Demo using Tensorflow
 
-This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and Marblerun to take care of attestation and secret provisioning.
+This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and MarbleRun to take care of attestation and secret provisioning.
 
 **Warning**: This sample enables `loader.insecure__use_host_env` in [tensorflow_model_server.manifest.template](graphene-files/tensorflow_model_server.manifest.template). Don't use this on production until [secure forwarding of host environment variables](https://github.com/oscarlab/graphene/issues/2356) will be available.
 
@@ -10,12 +10,12 @@ This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab
 ![marblerun-tensorflow](illustration.svg)
 
 1.	The model owner encrypts the model and uploads the encrypted model to a cloud storage
-2.	The administrator deploys Marblerun with a manifest defining the topology and components of the confidential ML deployment
+2.	The administrator deploys MarbleRun with a manifest defining the topology and components of the confidential ML deployment
 3.	The administrator deploys the confidential ML application.
-4.	Marblerun takes care of authentication and bootstrapping procedures.
-5.	The model owner verifies the deployment via Marblerun and uploads the encryption key securely to the TensorFlow Serving application via Marblerun’s secret distribution.
+4.	MarbleRun takes care of authentication and bootstrapping procedures.
+5.	The model owner verifies the deployment via MarbleRun and uploads the encryption key securely to the TensorFlow Serving application via MarbleRun’s secret distribution.
 6.	The application can decrypt the model inside the enclave via the provisioned key.
-7.	Clients can verify the deployment via Marblerun and connect securely to the inference service, knowing that their data is only accessible inside the enclave and their predictions are made by the integrity-protected TensorFlow Serving application.
+7.	Clients can verify the deployment via MarbleRun and connect securely to the inference service, knowing that their data is only accessible inside the enclave and their predictions are made by the integrity-protected TensorFlow Serving application.
 ## Install dependencies
 
 To run the python scripts we need python3 and some extra libraries. Make sure pip is up to date and run:
@@ -27,7 +27,7 @@ pip3 install grpcio~=1.34.0
 
 ## Running the demo
 
-We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and Marblerun.
+We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and MarbleRun.
 You can also [build it yourself](#Building-the-Docker-Image).
 
 ### On Kubernetes
@@ -39,12 +39,12 @@ Make sure your cluster supports SGX and out-of-process attestation. You can foll
 
 If you built your own image you will have to change the image name in `kubernetes/templates/tf-server.yaml`.
 
-1. Start the Marblerun coordinator
+1. Start the MarbleRun coordinator
     ```bash
     marblerun install --domain="grpc.tf-serving.service.com\,localhost"
     ```
 
-1. Wait for Marblerun to set-up
+1. Wait for MarbleRun to set-up
     ```bash
     marblerun check
     ```
@@ -85,13 +85,13 @@ If you built your own image you will have to change the image name in `kubernete
     marblerun manifest set tf-server-manifest.json $MARBLERUN
     ```
 
-1. Upload the model key to Marblerun.
+1. Upload the model key to MarbleRun.
     ```bash
     sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
     marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
-1. Create and add the tensorflow namespace to Marblerun
+1. Create and add the tensorflow namespace to MarbleRun
     ```bash
     kubectl create namespace tensorflow
     marblerun namespace add tensorflow
@@ -107,7 +107,7 @@ If you built your own image you will have to change the image name in `kubernete
     kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/`kubectl -n tensorflow get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'`:/graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
-1. Get Marblerun's certificate
+1. Get MarbleRun's certificate
     ```bash
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
@@ -135,14 +135,14 @@ If you built your own image you will have to change the image name in `kubernete
     kubectl delete namespace tensorflow
     ```
 
-1. Uninstall Marblerun
+1. Uninstall MarbleRun
     ```bash
     marblerun uninstall
     ```
 
 ### Standalone
 
-You can run the demo with Marblerun in standalone mode as follows:
+You can run the demo with MarbleRun in standalone mode as follows:
 
 1. Create a mapping of machine B's IP adress (the machine you plan to run the docker image on) to the Tensorflow Serving domain name (127.0.0.1 if you are running on just one machine)
     ```bash
@@ -150,7 +150,7 @@ You can run the demo with Marblerun in standalone mode as follows:
     echo "${machineB_ip_addr} grpc.tf-serving.service.com" >> /etc/hosts
     ```
 
-1. Start Marblerun
+1. Start MarbleRun
     ```bash
     EDG_COORDINATOR_DNS_NAMES=grpc.tf-serving.service.com erthost ${marblerun_dir}/build/coordinator-enclave.signed
     export MARBLERUN=grpc.tf-serving.service.com:4433
@@ -186,7 +186,7 @@ You can run the demo with Marblerun in standalone mode as follows:
     marblerun manifest set tf-server-manifest.json $MARBLERUN
     ```
 
-1. Upload the model key to Marblerun.
+1. Upload the model key to MarbleRun.
     ```bash
     sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
     marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
@@ -198,7 +198,7 @@ You can run the demo with Marblerun in standalone mode as follows:
     ./tools/run_tf_image.sh
     ```
 
-1. Get Marblerun's intermediate certificate to connect to the model server.
+1. Get MarbleRun's intermediate certificate to connect to the model server.
     ```bash
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
