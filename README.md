@@ -87,8 +87,8 @@ If you built your own image you will have to change the image name in `kubernete
 
 1. Upload the model key to MarbleRun.
     ```bash
-    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
-    marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
+    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pfKey.json
+    marblerun secret set pfKey.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
 1. Create and add the tensorflow namespace to MarbleRun
@@ -188,8 +188,8 @@ You can run the demo with MarbleRun in standalone mode as follows:
 
 1. Upload the model key to MarbleRun.
     ```bash
-    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pf_key.json
-    marblerun secret set pf_key.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
+    sed -i "s|KEY_DATA|$(cat model_key | base64)|g" pfKey.json
+    marblerun secret set pfKey.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
 1. Start the Tensorflow Model Server

@@ -29,13 +29,13 @@
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .Marblerun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .Marblerun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "/dev/attestation/protected_files_key": "{{ hex .Secrets.pf_key }}"
+                    "/dev/attestation/protected_files_key": "{{ hex .Secrets.pfKey }}"
                 }
             }
         }
     },
     "Secrets": {
-        "pf_key": {
+        "pfKey": {
             "Type": "symmetric-key",
             "Size": 128,
             "UserDefined": true
@@ -53,7 +53,7 @@
         "secret-manager": {
             "ResourceType": "Secrets",
             "ResourceNames": [
-                "pf_key"
+                "pfKey"
             ],
             "Actions": [
                 "WriteSecret",
