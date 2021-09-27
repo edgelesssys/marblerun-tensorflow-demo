@@ -91,15 +91,9 @@ If you built your own image you will have to change the image name in `kubernete
     marblerun secret set pfKey.json $MARBLERUN --key user_credentials.key --cert user_credentials.crt
     ```
 
-1. Create and add the tensorflow namespace to MarbleRun
-    ```bash
-    kubectl create namespace tensorflow
-    marblerun namespace add tensorflow
-    ```
-
 1. Start the Tensorflow Model Server
     ```bash
-    helm install -f ./kubernetes/values.yaml tensorflow-demo ./kubernetes -n tensorflow
+    helm install -f ./kubernetes/values.yaml tensorflow-demo ./kubernetes --create-namespace -n tensorflow
     ```
 
 1. Upload the model to Kubernetes
