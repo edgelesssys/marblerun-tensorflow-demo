@@ -106,7 +106,7 @@ If you built your own image you will have to change the image name in `kubernete
 
 1. Upload the model to Kubernetes
     ```bash
-    kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/`kubectl -n tensorflow get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'`:/graphene/Examples/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
+    kubectl cp ./models/resnet50-v15-fp32/1/saved_model.pb tensorflow/`kubectl -n tensorflow get pods --template '{{range .items}}{{.metadata.name}}{{"\n"}}{{end}}'`:/tensorflow-marblerun/models/resnet50-v15-fp32/1/saved_model.pb
     ```
 
 1. Get MarbleRun's certificate
