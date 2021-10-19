@@ -1,34 +1,32 @@
 ################################## GRAPHENE ###################################
 
-# Graphene environment, including the path to the library OS and the debug
+# Gramine environment, including the path to the library OS and the debug
 # the default is "error" for non-debug builds, and "debug" for debug builds.
+loader.preload = "file:{{ gramine.libos }}"
 loader.log_level = "{{ log_level }}"
-loader.preload = "file:{{ graphene.libos }}"
 
 # entrypoint is the MarbleRun premain which then calls the executable in argv0
 libos.entrypoint = "premain-libos"
 
-
 ################################# ARGUMENTS ###################################
 
-# the decryption process is executed first and will call the main executable
-# after it has finished
+# argv0 must be the path to the actual application
 loader.argv0_override = "tensorflow_model_server"
-
 
 ################################# ENV VARS ####################################
 
-# Forward environment variables from the host. Don't use this on production!
-loader.insecure__use_host_env = true
-
 loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}"
 
+# Forward EDG environment variables, used by MarbleRun
+loader.env.EDG_MARBLE_TYPE = { passthrough = true }
+loader.env.EDG_MARBLE_COORDINATOR_ADDR = { passthrough = true }
+loader.env.EDG_MARBLE_UUID_FILE = { passthrough = true }
+loader.env.EDG_MARBLE_DNS_NAMES = { passthrough = true }
 
 ################################## SIGNALS ####################################
 
 # Allow for injecting SIGTERM signal from the host.
 sys.enable_sigterm_injection = true
-
 
 ################################# MOUNT FS  ###################################
 
@@ -38,7 +36,7 @@ sys.enable_sigterm_injection = true
 # Default glibc files, mounted from the Runtime directory in GRAPHENE_DIR.
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
-fs.mount.lib.uri = "file:{{ graphene.runtimedir() }}"
+fs.mount.lib.uri = "file:{{ gramine.runtimedir() }}"
 
 # Host-level libraries (e.g., /lib/x86_64-linux-gnu) required by TF-Serving.
 fs.mount.lib2.type = "chroot"
@@ -55,68 +53,69 @@ fs.mount.etc.type = "chroot"
 fs.mount.etc.path = "/etc"
 fs.mount.etc.uri = "file:/etc"
 
-# Mount the current working directory
+# Mount tensorflow_model_server working directory
 fs.mount.cwd.type = "chroot"
 fs.mount.cwd.path = "{{ tf_serving_dir_abspath }}"
 fs.mount.cwd.uri = "file:{{ tf_serving_dir }}"
-
 
 ############################### SGX: GENERAL ##################################
 
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
 # size must be specified during signing. If TF-Serving needs more virtual memory
-# than the enclave size, Graphene will not be able to allocate it.
+# than the enclave size, Gramine will not be able to allocate it.
 sgx.enclave_size = "4G"
 loader.pal_internal_mem_size = "512M"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more
-# threads than the number of TCSes. Note that Graphene also creates an internal
+# threads than the number of TCSes. Note that Gramine also creates an internal
 # thread for handling inter-process communication (IPC), and potentially another
 # thread for asynchronous events. Therefore, the actual number of threads that
 # the application can create is (sgx.thread_num - 2).
 #
 # We (somewhat arbitrarily) specify 512 threads since TF-Serving is multithreaded.
 sgx.thread_num = 512
+
 sgx.nonpie_binary = true
+sgx.debug = true
 
+############################# SGX: TRUSTED FILES ##############################
 
-############################# SGX: TRUSTED FILES ###############################
+# SGX trusted libraries and runtime files
+sgx.trusted_files = [
+    "file:{{ gramine.runtimedir() }}/",
+    "file:{{ arch_libdir }}/",
+    "file:/usr{{ arch_libdir }}/",
+    "file:tensorflow_model_server",
+    "file:premain-libos"
+]
 
-# SGX trusted libraries
+############################# SGX: ALLOWED FILES ##############################
 
-sgx.trusted_files.runtime = "file:{{ graphene.runtimedir() }}"
-sgx.trusted_files.arch_libdir = "file:{{ arch_libdir }}/"
-sgx.trusted_files.usr_arch_libdir = "file:/usr{{ arch_libdir }}/"
+sgx.allowed_files = [
+    "file:/etc/nsswitch.conf",
+    "file:/etc/ethers",
+    "file:/etc/hosts",
+    "file:/etc/group",
+    "file:/etc/passwd",
+    "file:/etc/services",
+    "file:/etc/host.conf",
+    "file:/etc/resolv.conf",
+    "file:/etc/gai.conf",
+    "file:/etc/localtime",
+    "file:uuid",
+    "file:/tf_server-uid/uuid-file"
+]
 
-# TF-Serving runtime
-sgx.trusted_files.tfexec = "file:tensorflow_model_server"
-sgx.trusted_files.premain = "file:premain-libos"
+############################# SGX: PROTECTED FILES ############################
 
+# encrypted files only available to the enclave application
+sgx.protected_files = [
+    "file:ssl.cfg",
+    "file:models/resnet50-v15-fp32/1/saved_model.pb"
+]
 
-############################# SGX: ALLOWED FILES ###############################
-
-# Name Service Switch (NSS) files (Attestation dependencies)
-sgx.allowed_files.nsswitch = "file:/etc/nsswitch.conf"
-sgx.allowed_files.ethers = "file:/etc/ethers"
-sgx.allowed_files.hosts = "file:/etc/hosts"
-sgx.allowed_files.group = "file:/etc/group"
-sgx.allowed_files.passwd = "file:/etc/passwd"
-sgx.allowed_files.service = "file:/etc/services"
-sgx.allowed_files.hostconf = "file:/etc/host.conf"
-sgx.allowed_files.resolvconf = "file:/etc/resolv.conf"
-sgx.allowed_files.gaivconf = "file:/etc/gai.conf"
-sgx.allowed_files.time = "file:/etc/localtime"
-
-
-# TF-Serving model
-sgx.allowed_files.sslcfg = "file:ssl.cfg"
-sgx.protected_files.model = "file:models/resnet50-v15-fp32/1/saved_model.pb"
-sgx.allowed_files.uid = "file:uuid"
-sgx.allowed_files.injected_uid = "file:/tf_server-uid/uuid-file"
-
-
-############################# SGX: Attestation ###############################
+############################# SGX: Attestation ################################
 
 sgx.remote_attestation = true
 sgx.isvprodid = 15

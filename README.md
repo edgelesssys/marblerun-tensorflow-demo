@@ -25,6 +25,8 @@ pip3 install -r ./client/requirements.txt
 pip3 install grpcio~=1.34.0
 ```
 
+To encrypt the model we need Gramine's `pf-crypt` tool. For installation instructions refer to the [Gramine GitHub](https://github.com/gramineproject/gramine/releases/tag/v1.0)
+
 ## Running the demo
 
 We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and MarbleRun.
@@ -41,7 +43,7 @@ If you built your own image you will have to change the image name in `kubernete
 
 1. Start the MarbleRun coordinator
     ```bash
-    marblerun install --domain="grpc.tf-serving.service.com\,localhost"
+    marblerun install
     ```
 
 1. Wait for MarbleRun to set-up
@@ -64,10 +66,10 @@ If you built your own image you will have to change the image name in `kubernete
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphene's `pf_crypt` to generate a key and encrypt the model.
+1. Use Graphene's `pf-crypt` to generate a key and encrypt the model.
     ```bash
-    pf_crypt gen-key --wrap-key model_key
-    pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
+    gramine-sgx-pf-crypt gen-key --wrap-key model_key
+    gramine-sgx-pf-crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
 1. Generate a user certificate and key.
@@ -75,14 +77,14 @@ If you built your own image you will have to change the image name in `kubernete
     openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
-1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json` (replacing `USER_CERT`)
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `manifest.json` (replacing `USER_CERT`)
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
     ```
 
 1. Upload the manifest:
     ```bash
-    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    marblerun manifest set manifest.json $MARBLERUN
     ```
 
 1. Upload the model key to MarbleRun.
@@ -112,19 +114,23 @@ If you built your own image you will have to change the image name in `kubernete
     marblerun certificate intermediate $MARBLERUN -o tensorflow.crt
     ```
 
-1. Create mapping of the Tensorflow Model Server IP to its domain name
+1. Get TensorFlow's domain name
+
+    Usually, one would set up DNS resolution for the cluster.
+    To keep things simple, we will create a mapping of the TensorFlow Model Server IP to a domain name using `/etc/hosts`
+
     * First get the IP Adress:
         ```bash
         tf_ip_addr=`kubectl get svc -n tensorflow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].ip}'`
         ```
     * Set the mapping in `/etc/hosts`:
         ```bash
-        echo "${tf_ip_addr} grpc.tf-serving.service.com" >> /etc/hosts
+        echo "${tf_ip_addr} grpc.tensorflow-serving.com" >> /etc/hosts
         ```
 
 1. Submit a request using encrypted traffic over gRPC
     ```bash
-    python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt ./tensorflow.crt --batch 1 --cnum 1 --loop 10
+    python3 ./client/resnet_client_grpc.py --url grpc.tensorflow-serving.com:8500 --crt ./tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
 
 ### Cleaning up
@@ -144,16 +150,10 @@ If you built your own image you will have to change the image name in `kubernete
 
 You can run the demo with MarbleRun in standalone mode as follows:
 
-1. Create a mapping of machine B's IP adress (the machine you plan to run the docker image on) to the Tensorflow Serving domain name (127.0.0.1 if you are running on just one machine)
-    ```bash
-    machineB_ip_addr=XX.XX.XX.XX
-    echo "${machineB_ip_addr} grpc.tf-serving.service.com" >> /etc/hosts
-    ```
-
 1. Start MarbleRun
     ```bash
-    EDG_COORDINATOR_DNS_NAMES=grpc.tf-serving.service.com erthost ${marblerun_dir}/build/coordinator-enclave.signed
-    export MARBLERUN=grpc.tf-serving.service.com:4433
+    erthost ${marblerun_dir}/build/coordinator-enclave.signed
+    export MARBLERUN=localhost:4433
     ```
 
 1. Download and convert the model
@@ -165,10 +165,10 @@ You can run the demo with MarbleRun in standalone mode as follows:
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphene's `pf_crypt` to generate a key and encrypt the model.
+1. Use Graphene's `pf-crypt` to generate a key and encrypt the model.
     ```bash
-    pf_crypt gen-key --wrap-key model_key
-    pf_crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
+    gramine-sgx-pf-crypt gen-key --wrap-key model_key
+    gramine-sgx-pf-crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
     ```
 
 1. Generate a user certificate and key.
@@ -176,14 +176,14 @@ You can run the demo with MarbleRun in standalone mode as follows:
     openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout user_credentials.key -out user_credentials.crt
     ```
 
-1. Insert the output of the following command as `Certificate` for user `tf-admin` in `tf-server-manifest.json`(replacing `USER_CERT`)
+1. Insert the output of the following command as `Certificate` for user `tf-admin` in `manifest.json`(replacing `USER_CERT`)
     ```bash
     awk 'NF {sub(/\r/, ""); printf "%s\\n",$0;}' user_credentials.crt
     ```
 
 1. Upload the manifest:
     ```bash
-    marblerun manifest set tf-server-manifest.json $MARBLERUN
+    marblerun manifest set manifest.json $MARBLERUN
     ```
 
 1. Upload the model key to MarbleRun.
@@ -205,7 +205,7 @@ You can run the demo with MarbleRun in standalone mode as follows:
 
 1. Test the model server using the gRPC client
     ```bash
-    python3 ./client/resnet_client_grpc.py --url grpc.tf-serving.service.com:8500 --crt tensorflow.crt --batch 1 --cnum 1 --loop 10
+    python3 ./client/resnet_client_grpc.py --url localhost:8500 --crt tensorflow.crt --batch 1 --cnum 1 --loop 10
     ```
 
 ## Building the Docker Image
@@ -217,5 +217,5 @@ You can run the demo with MarbleRun in standalone mode as follows:
 
 1. Next we can build the Docker image:
     ```bash
-    docker buildx build --secret id=signingkey,src=enclave-key.pem --tag ghcr.io/edgelesssys/tensorflow-graphene-marble:latest .
+    docker buildx build --secret id=signingkey,src=<path to private.pem> --tag ghcr.io/edgelesssys/tensorflow-graphene-marble:latest .
     ```

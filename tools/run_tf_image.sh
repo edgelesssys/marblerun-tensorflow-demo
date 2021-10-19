@@ -2,23 +2,20 @@
 
 set -e
 
-attestation_hosts="localhost:127.0.0.1"
-work_base_path=/graphene/Examples/tensorflow-marblerun
 mount_dir=`pwd -P`
-host_ports="8500-8501"
 image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+coordinator_addr=localhost:2001
+tf_dns_names=localhost
 
 docker run \
     -it \
     --rm \
-    --privileged \
     --device /dev/sgx \
     --network host \
-    --add-host=${attestation_hosts} \
-    -v ${mount_dir}/models:${work_base_path}/models \
+    -v ${mount_dir}/models:/tensorflow-marblerun/models \
     -v /var/run/aesmd:/var/run/aesmd \
     -e EDG_MARBLE_TYPE=tf-server \
     -e EDG_UUID_FILE="/tf_server-uid/uuid-file" \
-    -e EDG_MARBLE_COORDINATOR_ADDR=grpc.tf-serving.service.com:2001 \
-    -e EDG_MARBLE_DNS_NAMES=grpc.tf-serving.service.com \
+    -e EDG_MARBLE_COORDINATOR_ADDR=${coordinator_addr} \
+    -e EDG_MARBLE_DNS_NAMES=${tf_dns_names} \
     ${image_id}

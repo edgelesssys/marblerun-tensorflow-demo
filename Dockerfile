@@ -1,37 +1,43 @@
 # syntax=docker/dockerfile:experimental
 
-FROM alpine/git:latest AS pull
-RUN git clone https://github.com/edgelesssys/marblerun.git /premain
+FROM alpine/git:latest AS pull_marblerun
+RUN git clone https://github.com/edgelesssys/marblerun.git /marblerun
 
-FROM ghcr.io/edgelesssys/edgelessrt-deploy:latest AS release
-RUN apt-get update && apt-get install -y git meson build-essential autoconf gawk bison wget python3 libcurl4-openssl-dev \
-    python3-protobuf libprotobuf-c-dev protobuf-c-compiler python3-pip software-properties-common python3-click python3-jinja2 \
-    curl
-RUN wget -qO- https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key | apt-key add
-RUN add-apt-repository 'deb [arch=amd64] https://download.01.org/intel-sgx/sgx_repo/ubuntu bionic main'
-RUN apt-get install -y libsgx-quote-ex-dev libsgx-aesm-launch-plugin
-RUN python3 -m pip install "toml>=0.10"
+FROM ghcr.io/edgelesssys/edgelessrt-dev AS build-premain
+COPY --from=pull_marblerun /marblerun /premain
+WORKDIR /premain/build
+RUN cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo ..
+RUN make premain-libos
 
-RUN git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git /SGXDriver
-WORKDIR /SGXDriver
-RUN git reset --hard a93785f7d66527aa3bd331ba77b7993f3f9c729b
+FROM ubuntu:20.04 AS release
+RUN apt update && \
+    apt install -y libssl-dev gnupg software-properties-common
 
-RUN git clone https://github.com/oscarlab/graphene.git /graphene
-WORKDIR /graphene
-RUN git reset --hard 202b77ace19e13bffd24959e3a6dc46dc9066ec9
+RUN apt-key adv --fetch-keys https://packages.microsoft.com/keys/microsoft.asc && \
+    apt-add-repository 'https://packages.microsoft.com/ubuntu/20.04/prod main' && \
+    apt-key adv --fetch-keys https://packages.gramineproject.io/gramine.asc && \
+    add-apt-repository 'deb [arch=amd64] https://packages.gramineproject.io/ stable main' && \
+    apt-key adv --fetch-keys https://download.01.org/intel-sgx/sgx_repo/ubuntu/intel-sgx-deb.key && \
+    add-apt-repository 'https://download.01.org/intel-sgx/sgx_repo/ubuntu main' && \
+    apt-key adv --fetch-keys https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg && \
+    add-apt-repository 'deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal'
 
-RUN make ISGX_DRIVER_PATH=/SGXDriver/driver/linux/ SGX=1
-RUN meson build -Ddirect=disabled -Dsgx=enabled
-RUN ninja -C build
-RUN ninja -C build install
+RUN apt-get update && apt-get install -y \
+    az-dcap-client \
+    wget \
+    libsgx-quote-ex-dev \
+    libsgx-aesm-launch-plugin \
+    build-essential \
+    libprotobuf-c-dev \
+    libstdc++6 \
+    tensorflow-model-server \
+    gramine-dcap && \
+    apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y
 
+COPY ./gramine-files/ /tensorflow-marblerun
+COPY --from=build-premain /premain/build/premain-libos /tensorflow-marblerun
+WORKDIR /tensorflow-marblerun
+RUN --mount=type=secret,id=signingkey,dst=/tensorflow-marblerun/signing_key.pem,required=true \
+    make DEBUG=0
 
-RUN echo "deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal" | tee /etc/apt/sources.list.d/tensorflow-serving.list && curl https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg | apt-key add -
-RUN apt-get update && apt-get install -y tensorflow-model-server
-
-COPY ./graphene-files/ /graphene/Examples/tensorflow-marblerun/
-WORKDIR /graphene/Examples/tensorflow-marblerun
-RUN wget https://github.com/edgelesssys/marblerun/releases/latest/download/premain-libos && chmod u+x premain-libos
-RUN --mount=type=secret,id=signingkey,dst=/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem,required=true \
-    make SGX=1 DEBUG=0
-ENTRYPOINT ["/graphene/Examples/tensorflow-marblerun/tf_serving_entrypoint.sh"]
+ENTRYPOINT [ "gramine-sgx", "tensorflow_model_server" ]

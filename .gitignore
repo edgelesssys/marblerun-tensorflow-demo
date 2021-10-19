@@ -5,6 +5,5 @@ __pycache__/
 era-config.json
 tensorflow.crt
 model_key
-manifest.json
 enclave-key.pem
 user_credentials*
