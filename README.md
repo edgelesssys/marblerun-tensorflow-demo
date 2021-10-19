@@ -2,9 +2,7 @@
 
 # Privacy Preserving Machine Learning Demo using Tensorflow
 
-This demo is based on the [Graphene Tensorflow Demo](https://github.com/oscarlab/graphene), using Graphene to run a Tensorflow Model Server in an SGX enclave and MarbleRun to take care of attestation and secret provisioning.
-
-**Warning**: This sample enables `loader.insecure__use_host_env` in [tensorflow_model_server.manifest.template](graphene-files/tensorflow_model_server.manifest.template). Don't use this on production until [secure forwarding of host environment variables](https://github.com/oscarlab/graphene/issues/2356) will be available.
+This demo uses Gramine to run a Tensorflow Model Server in an SGX enclave, and MarbleRun to take care of attestation and secret provisioning.
 
 ## How it works
 ![marblerun-tensorflow](illustration.svg)
@@ -29,7 +27,7 @@ To encrypt the model we need Gramine's `pf-crypt` tool. For installation instruc
 
 ## Running the demo
 
-We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-graphene-marble) to run TensorFlow Serving with Graphene and MarbleRun.
+We provide [a docker image](https://github.com/orgs/edgelesssys/packages/container/package/tensorflow-gramine-marble) to run TensorFlow Serving with Gramine and MarbleRun.
 You can also [build it yourself](#Building-the-Docker-Image).
 
 ### On Kubernetes
@@ -66,7 +64,7 @@ If you built your own image you will have to change the image name in `kubernete
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphene's `pf-crypt` to generate a key and encrypt the model.
+1. Use Gramine's `pf-crypt` to generate a key and encrypt the model.
     ```bash
     gramine-sgx-pf-crypt gen-key --wrap-key model_key
     gramine-sgx-pf-crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
@@ -165,7 +163,7 @@ You can run the demo with MarbleRun in standalone mode as follows:
     mv models/resnet50-v15-fp32/1/saved_model.pb plain/
     ```
 
-1. Use Graphene's `pf-crypt` to generate a key and encrypt the model.
+1. Use Gramine's `pf-crypt` to generate a key and encrypt the model.
     ```bash
     gramine-sgx-pf-crypt gen-key --wrap-key model_key
     gramine-sgx-pf-crypt encrypt --input plain/saved_model.pb --output models/resnet50-v15-fp32/1/saved_model.pb --wrap-key model_key
@@ -217,5 +215,5 @@ You can run the demo with MarbleRun in standalone mode as follows:
 
 1. Next we can build the Docker image:
     ```bash
-    docker buildx build --secret id=signingkey,src=<path to private.pem> --tag ghcr.io/edgelesssys/tensorflow-graphene-marble:latest .
+    docker buildx build --secret id=signingkey,src=<path to private.pem> --tag ghcr.io/edgelesssys/tensorflow-gramine-marble:latest .
     ```
