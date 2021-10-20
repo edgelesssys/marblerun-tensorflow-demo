@@ -26,7 +26,7 @@ spec:
     spec:
       serviceAccountName: tf-server
       containers:
-      - image: ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+      - image: ghcr.io/edgelesssys/tensorflow-gramine-marble:latest
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: tf-server
         resources:

@@ -16,7 +16,6 @@
                     "--model_name=resnet50",
                     "--model_base_path=/models/resnet50-v15-fp32",
                     "--port=8500",
-                    "--rest_api_port=8501",
                     "--ssl_config_file=ssl.cfg",
                     "--file_system_poll_wait_seconds=10",
                     "--enable_profiler=false"

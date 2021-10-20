@@ -14,9 +14,9 @@ SGX_SIGNER_KEY ?= $(THIS_DIR)/signing_key.pem
 TF-SERVING_DIR := /usr/bin
 
 ifeq ($(DEBUG),1)
-GRAPHENE_LOG_LEVEL = debug
+GRAMINE = debug
 else
-GRAPHENE_LOG_LEVEL = error
+GRAMINE_LOG_LEVEL = error
 endif
 
 .PHONY: all
@@ -24,7 +24,7 @@ all: tensorflow_model_server tensorflow_model_server.manifest.sgx tensorflow_mod
 
 tensorflow_model_server.manifest: tensorflow_model_server.manifest.template
 	gramine-manifest \
-		-Dlog_level=$(GRAPHENE_LOG_LEVEL) \
+		-Dlog_level=$(GRAMINE_LOG_LEVEL) \
 		-Darch_libdir=$(ARCH_LIBDIR) \
 		-Dtf_serving_dir=$(TF-SERVING_DIR) \
 		-Dtf_serving_dir_abspath=$(abspath $(TF-SERVING_DIR)) \

@@ -2,8 +2,8 @@
 
 set -e
 
-mount_dir=`pwd -P`
-image_id=ghcr.io/edgelesssys/tensorflow-graphene-marble:latest
+mount_dir=$(pwd -P)
+image_id=ghcr.io/edgelesssys/tensorflow-gramine-marble:latest
 coordinator_addr=localhost:2001
 tf_dns_names=localhost
 
@@ -12,7 +12,7 @@ docker run \
     --rm \
     --device /dev/sgx \
     --network host \
-    -v ${mount_dir}/models:/tensorflow-marblerun/models \
+    -v "${mount_dir}/models":/tensorflow-marblerun/models \
     -v /var/run/aesmd:/var/run/aesmd \
     -e EDG_MARBLE_TYPE=tf-server \
     -e EDG_UUID_FILE="/tf_server-uid/uuid-file" \
