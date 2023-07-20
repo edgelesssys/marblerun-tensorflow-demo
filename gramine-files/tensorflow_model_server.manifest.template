@@ -2,7 +2,7 @@
 
 # Gramine environment, including the path to the library OS and the debug
 # the default is "error" for non-debug builds, and "debug" for debug builds.
-loader.preload = "file:{{ gramine.libos }}"
+loader.entrypoint = "file:{{ gramine.libos }}"
 loader.log_level = "{{ log_level }}"
 
 # entrypoint is the MarbleRun premain which then calls the executable in argv0
@@ -10,12 +10,12 @@ libos.entrypoint = "premain-libos"
 
 ################################# ARGUMENTS ###################################
 
-# argv0 must be the path to the actual application
-loader.argv0_override = "tensorflow_model_server"
+# MARBLERUN: argv0 must be the path to the actual application
+loader.argv = ["redis-server"]
 
 ################################# ENV VARS ####################################
 
-loader.env.LD_LIBRARY_PATH = "/lib:{{ arch_libdir }}:/usr{{ arch_libdir }}"
+loader.env.LD_LIBRARY_PATH = "/lib:/lib/x86_64-linux-gnu:/usr/lib/x86_64-linux-gnu"
 
 # Forward EDG environment variables, used by MarbleRun
 loader.env.EDG_MARBLE_TYPE = { passthrough = true }
@@ -34,29 +34,23 @@ sys.enable_sigterm_injection = true
 # guest. Other parts of the host FS will not be available in the guest.
 
 # Default glibc files, mounted from the Runtime directory in GRAMINE_DIR.
-fs.mount.lib.type = "chroot"
-fs.mount.lib.path = "/lib"
-fs.mount.lib.uri = "file:{{ gramine.runtimedir() }}"
+fs.mounts = [
+  { path = "/lib", uri = "file:{{ gramine.runtimedir() }}" },
 
-# Host-level libraries (e.g., /lib/x86_64-linux-gnu) required by TF-Serving.
-fs.mount.lib2.type = "chroot"
-fs.mount.lib2.path = "{{ arch_libdir }}"
-fs.mount.lib2.uri = "file:{{ arch_libdir }}"
+  # Host-level libraries (e.g., /lib/x86_64-linux-gnu) required by TF-Serving.
+  { path = "/usr/lib/x86_64-linux-gnu", uri = "file:/usr/lib/x86_64-linux-gnu" },
+  { path = "/lib/x86_64-linux-gnu", uri = "file:/lib/x86_64-linux-gnu" },
 
-# More host-level libraries (e.g., /usr/lib/x86_64-linux-gnu) required by TF-Serving.
-fs.mount.lib3.type = "chroot"
-fs.mount.lib3.path = "/usr{{ arch_libdir }}"
-fs.mount.lib3.uri = "file:/usr{{ arch_libdir }}"
+  # Host-level directory to NSS files required by Glibc + NSS libs.
+  { path = "/etc", uri = "file:/etc" },
 
-# Host-level directory to NSS files required by Glibc + NSS libs.
-fs.mount.etc.type = "chroot"
-fs.mount.etc.path = "/etc"
-fs.mount.etc.uri = "file:/etc"
+  # Mount tensorflow_model_server working directory
+  { path = "{{ tf_serving_dir_abspath }}", uri = "file:{{ tf_serving_dir }}"} ,
 
-# Mount tensorflow_model_server working directory
-fs.mount.cwd.type = "chroot"
-fs.mount.cwd.path = "{{ tf_serving_dir_abspath }}"
-fs.mount.cwd.uri = "file:{{ tf_serving_dir }}"
+  # Encrypted files
+  { type = "encrypted", path = "ssl.cfg", uri = "file:ssl.cfg", key_name = "tf-key" },
+  { type = "encrypted", path = "models/resnet50-v15-fp32/1/saved_model.pb", uri = "file:models/resnet50-v15-fp32/1/saved_model.pb", key_name = "tf-key" },
+]
 
 ############################### SGX: GENERAL ##################################
 
@@ -64,7 +58,6 @@ fs.mount.cwd.uri = "file:{{ tf_serving_dir }}"
 # size must be specified during signing. If TF-Serving needs more virtual memory
 # than the enclave size, Gramine will not be able to allocate it.
 sgx.enclave_size = "4G"
-loader.pal_internal_mem_size = "512M"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more
@@ -74,9 +67,8 @@ loader.pal_internal_mem_size = "512M"
 # the application can create is (sgx.thread_num - 2).
 #
 # We (somewhat arbitrarily) specify 512 threads since TF-Serving is multithreaded.
-sgx.thread_num = 512
+sgx.max_threads = 512
 
-sgx.nonpie_binary = true
 sgx.debug = true
 
 ############################# SGX: TRUSTED FILES ##############################
@@ -107,16 +99,8 @@ sgx.allowed_files = [
     "file:/tf_server-uid/uuid-file"
 ]
 
-############################# SGX: PROTECTED FILES ############################
-
-# encrypted files only available to the enclave application
-sgx.protected_files = [
-    "file:ssl.cfg",
-    "file:models/resnet50-v15-fp32/1/saved_model.pb"
-]
-
 ############################# SGX: Attestation ################################
 
-sgx.remote_attestation = true
+sgx.remote_attestation = "dcap"
 sgx.isvprodid = 15
 sgx.isvsvn    = 1
