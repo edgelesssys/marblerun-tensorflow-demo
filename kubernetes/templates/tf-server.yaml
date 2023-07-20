@@ -26,7 +26,7 @@ spec:
     spec:
       serviceAccountName: tf-server
       containers:
-      - image: ghcr.io/edgelesssys/tensorflow-gramine-marble:latest
+      - image: {{ .Values.image }}:{{ .Values.imageTag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         name: tf-server
         resources:
@@ -34,6 +34,10 @@ spec:
             memory: "4Gi"
             cpu: 2
         env:
+        - name: PCCS_URL
+          value: {{ .Values.pccsURL }}
+        - name: PCCS_USE_SECURE_CERT
+          value: {{ .Values.secureCert }}
         - name: SGX_AESM_ADDR
           value: "1"
         - name: EDG_MARBLE_UUID_FILE
