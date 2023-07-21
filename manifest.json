@@ -22,7 +22,7 @@
                 ],
                 "Files": {
                     "ssl.cfg": "server_key: '-----BEGIN PRIVATE KEY-----\\n{{ base64 .MarbleRun.MarbleCert.Private }}\\n-----END PRIVATE KEY-----'\nserver_cert: '-----BEGIN CERTIFICATE-----\\n{{ base64 .MarbleRun.MarbleCert.Cert }}\\n-----END CERTIFICATE-----'\nclient_verify: false",
-                    "/dev/attestation/protected_files_key": "{{ hex .Secrets.pfKey }}"
+                    "/dev/attestation/keys/tf-key": "{{ raw .Secrets.pfKey }}"
                 }
             }
         }
