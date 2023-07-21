@@ -31,13 +31,15 @@ spec:
         name: tf-server
         resources:
           requests:
-            memory: "4Gi"
+            memory: "5Gi"
             cpu: 2
+          limits:
+           sgx.intel.com/epc: "4Gi"
         env:
         - name: PCCS_URL
           value: {{ .Values.pccsURL }}
         - name: PCCS_USE_SECURE_CERT
-          value: {{ .Values.secureCert }}
+          value: "{{ .Values.secureCert }}"
         - name: SGX_AESM_ADDR
           value: "1"
         - name: EDG_MARBLE_UUID_FILE

@@ -9,10 +9,9 @@ RUN make premain-libos
 
 FROM gramineproject/gramine:v1.4 AS release
 RUN apt update && \
-    apt install -y libssl-dev gnupg software-properties-common
+    apt install -y libssl-dev gnupg software-properties-common wget
 
-RUN apt-key adv --fetch-keys https://storage.googleapis.com/tensorflow-serving-apt/tensorflow-serving.release.pub.gpg && \
-    add-apt-repository 'deb [arch=amd64] http://storage.googleapis.com/tensorflow-serving-apt stable tensorflow-model-server tensorflow-model-server-universal'
+RUN wget 'https://storage.googleapis.com/tensorflow-serving-apt/pool/tensorflow-model-server-2.6.3/t/tensorflow-model-server/tensorflow-model-server_2.6.3_all.deb'
 
 RUN apt-get update && apt-get install -y \
     wget \
@@ -22,7 +21,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libprotobuf-c-dev \
     libstdc++6 \
-    tensorflow-model-server && \
+    ./tensorflow-model-server_2.6.3_all.deb && \
     apt-get clean -y && apt-get autoclean -y && apt-get autoremove -y
 
 COPY ./gramine-files/ /tensorflow-marblerun

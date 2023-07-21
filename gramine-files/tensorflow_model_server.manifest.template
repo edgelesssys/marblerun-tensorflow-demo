@@ -11,7 +11,7 @@ libos.entrypoint = "premain-libos"
 ################################# ARGUMENTS ###################################
 
 # MARBLERUN: argv0 must be the path to the actual application
-loader.argv = ["redis-server"]
+loader.argv = ["tensorflow_model_server"]
 
 ################################# ENV VARS ####################################
 
@@ -48,8 +48,8 @@ fs.mounts = [
   { path = "{{ tf_serving_dir_abspath }}", uri = "file:{{ tf_serving_dir }}"} ,
 
   # Encrypted files
-  { type = "encrypted", path = "ssl.cfg", uri = "file:ssl.cfg", key_name = "tf-key" },
-  { type = "encrypted", path = "models/resnet50-v15-fp32/1/saved_model.pb", uri = "file:models/resnet50-v15-fp32/1/saved_model.pb", key_name = "tf-key" },
+  { type = "encrypted", path = "/ssl.cfg", uri = "file:ssl.cfg", key_name = "tf-key" },
+  { type = "encrypted", path = "/models/resnet50-v15-fp32/1/saved_model.pb", uri = "file:models/resnet50-v15-fp32/1/saved_model.pb", key_name = "tf-key" },
 ]
 
 ############################### SGX: GENERAL ##################################
@@ -57,7 +57,7 @@ fs.mounts = [
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
 # size must be specified during signing. If TF-Serving needs more virtual memory
 # than the enclave size, Gramine will not be able to allocate it.
-sgx.enclave_size = "4G"
+sgx.enclave_size = "8G"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more
