@@ -57,7 +57,7 @@ fs.mounts = [
 # Set the virtual memory size of the SGX enclave. For SGX v1, the enclave
 # size must be specified during signing. If TF-Serving needs more virtual memory
 # than the enclave size, Gramine will not be able to allocate it.
-sgx.enclave_size = "8G"
+sgx.enclave_size = "4G"
 
 # Set the maximum number of enclave threads. For SGX v1, the number of enclave
 # TCSes must be specified during signing, so the application cannot use more
